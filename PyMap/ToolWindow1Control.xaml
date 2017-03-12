@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="PyMap.ToolWindow1Control"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:PyMap"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             Name="MyToolWindow"
+             d:DesignHeight="300"
+             d:DesignWidth="300"
+             Background="{DynamicResource VsBrush.Window}"
+             Foreground="{DynamicResource VsBrush.WindowText}"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <local:KewordColorConverter x:Key="KewordColorConverter" />
+    </UserControl.Resources>
+    <Grid>
+
+        <ListBox x:Name="codeMapList"
+                 Margin="0,0,0,5"
+                 Background="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowBackgroundKey}}"
+                 Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"
+                 ItemsSource="{Binding MemberList}"
+                 MouseDoubleClick="ListBox_MouseDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border>
+                        <TextBlock x:Name="itemText">
+                            <Run Text="{Binding ContentIndent}" />
+                            <Run FontStyle="Italic"
+                                 Foreground="{Binding ElementName=codeMapList,
+                                                      Path=Background,
+                                                      Converter={StaticResource KewordColorConverter}}"
+                                 Text="{Binding ContentType}" />
+                            <Run Text=" " />
+                            <Run Text="{Binding Content}" />
+                        </TextBlock>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
