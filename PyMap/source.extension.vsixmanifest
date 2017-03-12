@@ -2,7 +2,7 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
     <Identity Id="PyMap.Company.VS2017.7e23d0e3-13e4-4af2-828a-433e71c2a335" Version="1.1" Language="en-US" Publisher="Oleg Shilo" />
-    <DisplayName>PyMap</DisplayName>
+    <DisplayName>PyMap - 2017</DisplayName>
     <Description xml:space="preserve">Code map for Python source files.</Description>
     <License>licence.txt</License>
     <Icon>package.ico</Icon>
