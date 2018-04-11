@@ -15,8 +15,10 @@ namespace PyMap
     using Microsoft.VisualStudio.Text.Editor;
     using System.ComponentModel;
     using System.IO;
+    using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Input;
+    using System.Windows.Media;
 
     /// <summary>
     /// Interaction logic for ToolWindow1Control.
@@ -47,11 +49,101 @@ namespace PyMap
             watcher.Deleted += Watcher_Changed;
             watcher.Renamed += Watcher_Changed;
 
+            foreach (var itemName in typeof(FontWeights).GetProperties().Select(x => x.Name))
+            {
+                fontWeights.Items.Add(itemName);
+                if (fontWeights.SelectedItem == null && codeMapList.FontWeight.ToString() == itemName)
+                    fontWeights.SelectedItem = itemName;
+            }
+
+            foreach (var itemName in Fonts.SystemFontFamilies.Select(x => x.ToString()).OrderBy(x => x))
+            {
+                fonts.Items.Add(itemName);
+                if (fonts.SelectedItem == null && codeMapList.FontFamily.ToString() == itemName)
+                    fonts.SelectedItem = itemName;
+            }
+
+            ReadSettings();
+
+            initialized = true;
+        }
+
+        bool initialized = false;
+
+        static string settingsFile
+        {
+            get
+            {
+                if (!File.Exists(_settingsFile))
+                {
+                    string settings_dir = Path.GetDirectoryName(_settingsFile);
+                    if (!Directory.Exists(settings_dir))
+                        Directory.CreateDirectory(settings_dir);
+                    File.WriteAllText(_settingsFile, "");
+                }
+                return _settingsFile;
+            }
+        }
+
+        static string _settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PyMap.2017.VSIX", "settings.dat");
+
+        void SaveSettings()
+        {
+            try
+            {
+                if (initialized)
+                {
+                    string data = ExtractFontSettings();
+                    File.WriteAllText(settingsFile, data);
+                }
+            }
+            catch { }
+        }
+
+        void ReadSettings()
+        {
+            try
+            {
+                string data = File.ReadAllText(settingsFile);
+                ApplyFontSettings(data);
+            }
+            catch { }
+        }
+
+        string ExtractFontSettings()
+        {
+            return $"FontFamily:{codeMapList.FontFamily}\n" +
+                   $"FontSize:{codeMapList.FontSize}\n" +
+                   $"FontWeight:{codeMapList.FontWeight}";
+        }
+
+        void ApplyFontSettings(string settings)
+        {
+            var items = settings.Split('\n')
+                                .Select(x => x.Trim())
+                                .Where(x => !string.IsNullOrEmpty(x))
+                                .Select(x =>
+                                {
+                                    var parts = x.Split(':');
+                                    return new { Key = parts[0], Value = parts[1] };
+                                });
+
+            foreach (var item in items)
+            {
+                if (item.Key == "FontFamily" && fonts.Items.Contains(item.Value))
+                    fonts.SelectedItem = item.Value;
+
+                if (item.Key == "FontWeight" && fontWeights.Items.Contains(item.Value))
+                    fontWeights.SelectedItem = item.Value;
+
+                if (item.Key == "FontSize" && double.TryParse(item.Value, out double new_size))
+                    codeMapList.FontSize = new_size;
+            }
         }
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            Dispatcher.Invoke(()=>RefreshMap());
+            Dispatcher.Invoke(() => RefreshMap());
         }
 
         string docFile = null;
@@ -91,7 +183,7 @@ namespace PyMap
                 {
                     if (File.Exists(docFile))
                     {
-                        if (force  || docFileTimestamp != File.GetLastWriteTimeUtc(docFile))
+                        if (force || docFileTimestamp != File.GetLastWriteTimeUtc(docFile))
                         {
                             parser.GenerateContentPython(docFile);
                             docFileTimestamp = File.GetLastWriteTimeUtc(docFile);
@@ -122,11 +214,69 @@ namespace PyMap
             watcher.Path = Path.GetDirectoryName(file);
             watcher.EnableRaisingEvents = true;
         }
+
+        private void fontDec_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            codeMapList.FontSize--;
+
+            SaveSettings();
+        }
+
+        private void fontInc_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            codeMapList.FontSize++;
+
+            SaveSettings();
+        }
+
+        private void codeMapList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            return; // disable for now
+
+            if (Keyboard.GetKeyStates(Key.LeftCtrl) == KeyStates.Down)
+            {
+                if (e.Delta > 0)
+                    codeMapList.FontSize += 0.5;
+                else if (e.Delta < 0)
+                    codeMapList.FontSize -= 0.5;
+
+                e.Handled = true;
+
+                SaveSettings();
+            }
+        }
+
+        private void fonts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (fonts.SelectedItem != null && codeMapList.FontFamily.ToString() != (string)fonts.SelectedItem)
+            {
+                codeMapList.FontFamily = new FontFamily((string)fonts.SelectedItem);
+
+                SaveSettings();
+            }
+        }
+
+        private void fontWeights_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                FontWeight weight = typeof(FontWeights).GetProperties()
+                                                       .Where(x => x.Name == (string)fontWeights.SelectedItem)
+                                                       .Select(x => (FontWeight)x.GetValue(null))
+                                                       .FirstOrDefault();
+
+                codeMapList.FontWeight = weight;
+
+                SaveSettings();
+            }
+            catch { }
+        }
     }
 
     class PythonParser : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -172,7 +322,7 @@ namespace PyMap
 
                         if (line.StartsWith("class "))
                         {
-                            if(MemberList.Any())
+                            if (MemberList.Any())
                                 MemberList.Add(new MemberInfo { Line = -1 });
                             info.ContentType = "class";
                             info.Content = line.Substring("class ".Length).TrimEnd();
@@ -194,6 +344,5 @@ namespace PyMap
                 ErrorMessage = e.Message;
             }
         }
-
     }
 }

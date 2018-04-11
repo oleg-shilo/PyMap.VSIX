@@ -27,7 +27,7 @@ namespace PyMap
 
         public static T Get<T>()
         {
-            return (T) GetService(typeof(T));
+            return (T)GetService(typeof(T));
         }
 
         public static int Brightness(this Color color)
@@ -75,14 +75,14 @@ namespace PyMap
             object holder;
             Guid guidViewHost = DefGuidList.guidIWpfTextViewHost;
             GetUserData().GetData(ref guidViewHost, out holder);
-            return (IWpfTextViewHost) holder;
+            return (IWpfTextViewHost)holder;
         }
 
         static IVsUserData GetUserData()
         {
             int mustHaveFocus = 1;//means true
             IVsTextView currentTextView;
-            IVsTextManager txtMgr = (IVsTextManager) GetService(typeof(SVsTextManager));
+            IVsTextManager txtMgr = (IVsTextManager)GetService(typeof(SVsTextManager));
             txtMgr.GetActiveView(mustHaveFocus, null, out currentTextView);
 
             if (currentTextView is IVsUserData)
@@ -99,6 +99,7 @@ namespace PyMap
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";
         public string ContentIndent { set; get; } = "";
+
         public override string ToString()
         {
             return $"{ContentIndent} {ContentType} {Content}";
@@ -108,6 +109,7 @@ namespace PyMap
     public class KewordColorConverter : IValueConverter
     {
         static SolidColorBrush lightBlue = new SolidColorBrush(Color.FromRgb(59, 138, 210));
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             var brush = value as SolidColorBrush;
@@ -115,10 +117,9 @@ namespace PyMap
             {
                 if (brush.Color.Brightness() < 50)
                     return Brushes.LightSkyBlue;
-                    //return lightBlue;
+                //return lightBlue;
                 else
                     return Brushes.Blue;
-
             }
             return value;
         }
@@ -128,5 +129,4 @@ namespace PyMap
             throw new NotImplementedException();
         }
     }
-
 }
