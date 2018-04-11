@@ -17,10 +17,10 @@ The usage is straight forward and dead simple. Open any Python file and PyMap wi
 
 Double-clicking the item in the code tree will navigate to the location of the code element in the document.
 
-![](222701/1/Preview.png)
+![](docs/Preview.png)
 
 _Tips_
 
 * If you want to refresh the code tree just save the active document (Ctrl+S) and it will trigger the update.
 * CodeMap window can be activated via _View->Other Windows->CodeMap Python_ menu:
-  ![](222702/1/menu.png)
+  ![](docs/menu.png)
