@@ -85,7 +85,7 @@ namespace PyMap
             }
         }
 
-        static string _settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PyMap.2017.VSIX", "settings.dat");
+        static string _settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PyMap.2022.VSIX", "settings.dat");
 
         void SaveSettings()
         {
@@ -314,13 +314,18 @@ namespace PyMap
                 {
                     var line = code[i].TrimStart();
 
-                    if (line.StartsWithAny("def ", "class "))
+                    if (line.StartsWithAny("def ", "class ", "@"))
                     {
                         var info = new MemberInfo();
                         info.ContentIndent = new string(' ', (code[i].Length - line.Length));
                         info.Line = i;
 
-                        if (line.StartsWith("class "))
+                        if (line.StartsWith("@"))
+                        {
+                            info.ContentType = "@";
+                            info.Content = line.Substring("@".Length).Trim();
+                        }
+                        else if (line.StartsWith("class"))
                         {
                             if (MemberList.Any())
                                 MemberList.Add(new MemberInfo { Line = -1 });
