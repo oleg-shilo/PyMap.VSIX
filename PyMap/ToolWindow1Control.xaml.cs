@@ -1,24 +1,21 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="ToolWindow1Control.xaml.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
 using EnvDTE80;
 
 namespace PyMap
 {
-    using EnvDTE;
-    using Microsoft.VisualStudio.Text.Editor;
     using System.ComponentModel;
     using System.IO;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Input;
     using System.Windows.Media;
+    using Microsoft.VisualStudio.Text.Editor;
+using EnvDTE;
 
     /// <summary>
     /// Interaction logic for ToolWindow1Control.

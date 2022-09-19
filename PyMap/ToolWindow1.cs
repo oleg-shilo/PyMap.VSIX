@@ -1,15 +1,9 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="ToolWindow1.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
+﻿using System;
+using System.Runtime.InteropServices;
+using Microsoft.VisualStudio.Shell;
 
 namespace PyMap
 {
-    using System;
-    using System.Runtime.InteropServices;
-    using Microsoft.VisualStudio.Shell;
-
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
     /// </summary>
@@ -21,7 +15,7 @@ namespace PyMap
     /// implementation of the IVsUIElementPane interface.
     /// </para>
     /// </remarks>
-    [Guid("e91889a0-7c5d-4eda-bf68-1c0ca0e91260")]
+    [Guid("3225f881-13f0-470c-9e7b-28d44e6a7237")]
     public class ToolWindow1 : ToolWindowPane
     {
         /// <summary>
