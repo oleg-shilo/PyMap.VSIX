@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using EnvDTE80;
+using PyMap;
 
 namespace PyMap
 {
@@ -14,17 +18,22 @@ namespace PyMap
     using System.Windows.Controls;
     using System.Windows.Input;
     using System.Windows.Media;
+    using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Text.Editor;
-using EnvDTE;
+    using Microsoft.VisualStudio.Threading;
+    using EnvDTE;
 
     /// <summary>
     /// Interaction logic for ToolWindow1Control.
     /// </summary>
     public partial class ToolWindow1Control : UserControl
     {
+        public static bool IsDarkVSTheme => Instance?.IsDarkTheme?.IsChecked == true;
+        static ToolWindow1Control Instance;
+
         CommandEvents commandEvents;
         DTE2 dte;
-        PythonParser parser = new PythonParser();
+        SyntaxParser parser = new SyntaxParser();
         FileSystemWatcher watcher = new FileSystemWatcher();
 
         /// <summary>
@@ -32,6 +41,10 @@ using EnvDTE;
         /// </summary>
         public ToolWindow1Control()
         {
+            Instance = this;
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             this.InitializeComponent();
 
             this.DataContext = this.parser;
@@ -62,7 +75,16 @@ using EnvDTE;
 
             ReadSettings();
 
+            IsDarkTheme.Checked += IsDarkThemeChanged;
+            IsDarkTheme.Unchecked += IsDarkThemeChanged;
+
             initialized = true;
+        }
+
+        void IsDarkThemeChanged(object sender, RoutedEventArgs e)
+        {
+            SaveSettings();
+            RefreshMap(true);
         }
 
         bool initialized = false;
@@ -111,6 +133,7 @@ using EnvDTE;
         {
             return $"FontFamily:{codeMapList.FontFamily}\n" +
                    $"FontSize:{codeMapList.FontSize}\n" +
+                   $"IsDarkTheme:{IsDarkTheme.IsChecked}\n" +
                    $"FontWeight:{codeMapList.FontWeight}";
         }
 
@@ -130,6 +153,9 @@ using EnvDTE;
                 if (item.Key == "FontFamily" && fonts.Items.Contains(item.Value))
                     fonts.SelectedItem = item.Value;
 
+                if (item.Key == "IsDarkTheme")
+                    IsDarkTheme.IsChecked = bool.Parse(item.Value);
+
                 if (item.Key == "FontWeight" && fontWeights.Items.Contains(item.Value))
                     fontWeights.SelectedItem = item.Value;
 
@@ -138,9 +164,13 @@ using EnvDTE;
             }
         }
 
-        private void Watcher_Changed(object sender, FileSystemEventArgs e)
+        void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            Dispatcher.Invoke(() => RefreshMap());
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                RefreshMap();
+            });
         }
 
         string docFile = null;
@@ -148,13 +178,15 @@ using EnvDTE;
 
         void CommandEvents_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var doc = dte.ActiveDocument;
             if (doc != null)
             {
                 if (docFile != doc.FullName)
                 {
                     docFile = doc.FullName;
-                    RefreshMap();
+                    RefreshMap(true);
                 }
             }
         }
@@ -176,13 +208,13 @@ using EnvDTE;
         {
             try
             {
-                if (docFile.IsPythonFile())
+                if (parser.CanParse(docFile))
                 {
                     if (File.Exists(docFile))
                     {
                         if (force || docFileTimestamp != File.GetLastWriteTimeUtc(docFile))
                         {
-                            parser.GenerateContentPython(docFile);
+                            parser.GenerateMap(docFile);
                             docFileTimestamp = File.GetLastWriteTimeUtc(docFile);
                         }
 
@@ -195,7 +227,7 @@ using EnvDTE;
                     parser.Clear();
                 }
             }
-            catch (Exception e)
+            catch
             {
             }
         }
@@ -228,8 +260,6 @@ using EnvDTE;
 
         private void codeMapList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            return; // disable for now
-
             if (Keyboard.GetKeyStates(Key.LeftCtrl) == KeyStates.Down)
             {
                 if (e.Delta > 0)
@@ -268,9 +298,18 @@ using EnvDTE;
             }
             catch { }
         }
+
+        private void ItemSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is Image)
+            {
+                var img = (sender as Image);
+                img.Width = img.ActualHeight;
+            }
+        }
     }
 
-    class PythonParser : INotifyPropertyChanged
+    class SyntaxParser : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -299,45 +338,30 @@ using EnvDTE;
             MemberList.Clear();
         }
 
-        public void GenerateContentPython(string file)
+        public bool CanParse(string file)
+        {
+            var fileType = Path.GetExtension(file).ToLower();
+            return mappers.ContainsKey(fileType);
+        }
+
+        Dictionary<string, Func<string, IEnumerable<MemberInfo>>> mappers = new Dictionary<string, Func<string, IEnumerable<MemberInfo>>>()
+        {
+            { ".cs", CSharpMapper.Generate },
+            { ".py", PythonMapper.Generate },
+            { ".pyw", PythonMapper.Generate },
+        };
+
+        public void GenerateMap(string file)
         {
             try
             {
-                var code = File.ReadAllLines(file);
-
                 MemberList.Clear();
 
-                for (int i = 0; i < code.Length; i++)
-                {
-                    var line = code[i].TrimStart();
+                var fileType = Path.GetExtension(file).ToLower();
+                var generateMap = mappers[fileType];
 
-                    if (line.StartsWithAny("def ", "class ", "@"))
-                    {
-                        var info = new MemberInfo();
-                        info.ContentIndent = new string(' ', (code[i].Length - line.Length));
-                        info.Line = i;
-
-                        if (line.StartsWith("@"))
-                        {
-                            info.ContentType = "@";
-                            info.Content = line.Substring("@".Length).Trim();
-                        }
-                        else if (line.StartsWith("class"))
-                        {
-                            if (MemberList.Any())
-                                MemberList.Add(new MemberInfo { Line = -1 });
-                            info.ContentType = "class";
-                            info.Content = line.Substring("class ".Length).TrimEnd();
-                        }
-                        else
-                        {
-                            info.ContentType = "def";
-                            info.Content = line.Substring("def ".Length).TrimEnd();
-                        }
-
-                        MemberList.Add(info);
-                    }
-                }
+                foreach (var item in generateMap(file))
+                    MemberList.Add(item);
 
                 ErrorMessage = null;
             }

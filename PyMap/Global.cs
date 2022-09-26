@@ -1,18 +1,25 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using EnvDTE80;
-using EnvDTE;
-using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
-using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Resources;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.Text;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Package;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using EnvDTE;
+using EnvDTE80;
+
+// using PyMap.Resources.icons.dark;
 
 namespace PyMap
 {
@@ -33,11 +40,6 @@ namespace PyMap
         public static int Brightness(this Color color)
         {
             return (color.R + color.R + color.R + color.B + color.G + color.G + color.G + color.G) >> 3;
-        }
-
-        public static bool IsPythonFile(this string file)
-        {
-            return file.EndsWith(".py", StringComparison.InvariantCultureIgnoreCase) || file.EndsWith(".pyw", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public static bool StartsWithAny(this string text, params string[] patterns)
@@ -93,16 +95,117 @@ namespace PyMap
         }
     }
 
+    public static class Extensions
+    {
+        public static System.Drawing.Bitmap ToWinFormsBitmap(this BitmapSource bitmapsource)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bitmapsource));
+                enc.Save(stream);
+
+                using (var tempBitmap = new System.Drawing.Bitmap(stream))
+                {
+                    // According to MSDN, one "must keep the stream open for the lifetime of the Bitmap."
+                    // So we return a copy of the new bitmap, allowing us to dispose both the bitmap and the stream.
+                    return new System.Drawing.Bitmap(tempBitmap);
+                }
+            }
+        }
+
+        public static BitmapSource ToWpfBitmap(this System.Drawing.Bitmap bitmap)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+
+                stream.Position = 0;
+                BitmapImage result = new BitmapImage();
+                result.BeginInit();
+                // According to MSDN, "The default OnDemand cache option retains access to the stream until the image is needed."
+                // Force the bitmap to load right now so we can dispose the stream.
+                result.CacheOption = BitmapCacheOption.OnLoad;
+                result.StreamSource = stream;
+                result.EndInit();
+                result.Freeze();
+                return result;
+            }
+        }
+
+        public static BitmapSource ToWpfBitmap(this Stream stream)
+        {
+            stream.Position = 0;
+            BitmapImage result = new BitmapImage();
+            result.BeginInit();
+            // According to MSDN, "The default OnDemand cache option retains access to the stream until the image is needed."
+            // Force the bitmap to load right now so we can dispose the stream.
+            result.CacheOption = BitmapCacheOption.OnLoad;
+            result.StreamSource = stream;
+            result.EndInit();
+            result.Freeze();
+            stream.Dispose();
+            return result;
+        }
+
+        static public BitmapSource LoadAsEmbeddedResourceImage(this string name)
+            => Assembly.GetExecutingAssembly()
+                       .GetManifestResourceStream(name)
+                       .ToWpfBitmap();
+    }
+
+    public class MemberInfoImages
+    {
+        static public Dictionary<MemberType, BitmapSource> Dark = new Dictionary<MemberType, BitmapSource>
+        {
+            { MemberType.Interface,  "PyMap.Resources.icons.dark.interface.png".LoadAsEmbeddedResourceImage() },
+            { MemberType.Property,   "PyMap.Resources.icons.dark.property.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Field,      "PyMap.Resources.icons.dark.field.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Class,      "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Method,     "PyMap.Resources.icons.dark.method.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Constructor,"PyMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()}
+        };
+
+        static public Dictionary<MemberType, BitmapSource> Light = new Dictionary<MemberType, BitmapSource>
+        {
+            { MemberType.Interface,  "PyMap.Resources.icons.light.interface.png".LoadAsEmbeddedResourceImage() },
+            { MemberType.Property,   "PyMap.Resources.icons.light.property.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Field,      "PyMap.Resources.icons.light.field.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Class,      "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Method,     "PyMap.Resources.icons.light.method.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Constructor,"PyMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()}
+        };
+    }
+
+    public enum MemberType
+    {
+        Interface,
+        Class,
+        Constructor,
+        Method,
+        Property,
+        Field,
+    }
+
     public class MemberInfo
     {
-        public int Line { set; get; } = -1;
+        public int Line
+        { set; get; } = -1;
+
+        public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";
-        public string ContentIndent { set; get; } = "";
+        public string MemberContext { set; get; } = "";
+        public string Title { set; get; } = "";
+        public bool IsPublic { set; get; } = true;
+
+        public MemberType MemberType { set; get; }
+
+        public BitmapSource TypeIcon => (ToolWindow1Control.IsDarkVSTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 
         public override string ToString()
         {
-            return $"{ContentIndent} {ContentType} {Content}";
+            return $"{ContentType} {Content}";
         }
     }
 

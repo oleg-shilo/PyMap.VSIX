@@ -19,6 +19,8 @@ namespace PyMap
         /// </summary>
         public const int CommandId = 0x0100;
 
+        public int CommandId1 { get; set; }
+
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
@@ -27,7 +29,7 @@ namespace PyMap
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly AsyncPackage package;
+        public AsyncPackage package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Command"/> class.
