@@ -189,9 +189,7 @@ namespace PyMap
 
     public class MemberInfo
     {
-        public int Line
-        { set; get; } = -1;
-
+        public int Line { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";
@@ -201,11 +199,13 @@ namespace PyMap
 
         public MemberType MemberType { set; get; }
 
+        public MemberInfo[] Children;
+
         public BitmapSource TypeIcon => (ToolWindow1Control.IsDarkVSTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 
         public override string ToString()
         {
-            return $"{ContentType} {Content}";
+            return $"{Content} {MemberContext}";
         }
     }
 

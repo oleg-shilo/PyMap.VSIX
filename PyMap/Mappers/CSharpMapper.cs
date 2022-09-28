@@ -126,8 +126,17 @@ class CSharpMapper
                     });
                 }
             }
-            members = members.Where(x => x.IsPublic).OrderBy(x => x.MemberType).ToList();
-            map.AddRange(members);
+
+            members = members.Where(x =>
+                                    {
+                                        if (x.MemberType == MemberType.Property || x.MemberType == MemberType.Field)
+                                            return x.IsPublic;
+                                        return true;
+                                    })
+                             .OrderBy(x => x.MemberType)
+                             .ToList();
+
+            parent.Children = members.ToArray();
         }
 
         return map;
