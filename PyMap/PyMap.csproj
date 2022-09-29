@@ -50,6 +50,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PyMapPackage.cs" />
     <Compile Include="Mappers\PythonMapper.cs" />
+    <Compile Include="Mappers\SyntaxParser.cs" />
     <Compile Include="ToolWindow1.cs" />
     <Compile Include="ToolWindow1Command.cs" />
     <Compile Include="ToolWindow1Control.xaml.cs">

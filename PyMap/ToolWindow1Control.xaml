@@ -17,83 +17,50 @@
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <Expander
-            Grid.Row="0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            ExpandDirection="Right"
-            FlowDirection="RightToLeft"
-            IsExpanded="true"
-            ToolTip="Adjust font settings">
-            <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal">
-                <TextBlock
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    Foreground="{Binding ElementName=codeMapList, Path=Foreground}">
-                    Filter:
-                </TextBlock>
-                <TextBox
-                    MinWidth="60"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Center"
-                    Background="{Binding ElementName=codeMapList, Path=Background}"
-                    Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
-                    ToolTip="Class name filter" />
-                <TextBlock
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    Foreground="{Binding ElementName=codeMapList, Path=Foreground}">
-                    .
-                </TextBlock>
-                <TextBox
-                    MinWidth="60"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Center"
-                    Background="{Binding ElementName=codeMapList, Path=Background}"
-                    Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
-                    ToolTip="Member name filter" />
-                <CheckBox
-                    x:Name="IsDarkTheme"
-                    Margin="0,0,10,0"
-                    VerticalAlignment="Center"
-                    Foreground="{Binding ElementName=codeMapList, Path=Foreground}">
-                    Dark
-                </CheckBox>
-                <ComboBox
-                    x:Name="fontWeights"
-                    MinWidth="100"
-                    SelectionChanged="fontWeights_SelectionChanged"
-                    ToolTip="Select desired font weight"
-                    Visibility="Collapsed" />
-                <ComboBox
-                    x:Name="fonts"
-                    MinWidth="100"
-                    SelectionChanged="fonts_SelectionChanged"
-                    ToolTip="Select desired font"
-                    Visibility="Collapsed" />
-                <Button
-                    x:Name="fontDec"
-                    Width="20"
-                    Click="fontDec_Click"
-                    ToolTip="Decrease font size"
-                    Visibility="Collapsed">
-                    -
-                </Button>
 
-                <Button
-                    x:Name="fontInc"
-                    Width="20"
-                    Click="fontInc_Click"
-                    ToolTip="Increase font size"
-                    Visibility="Collapsed">
-                    +
-                </Button>
-            </StackPanel>
-        </Expander>
+        <Grid Margin="0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Margin="5,0"
+                VerticalAlignment="Center"
+                Foreground="{Binding ElementName=codeMapList, Path=Foreground}">
+                Filter:
+            </TextBlock>
+            <TextBox
+                Grid.Column="1"
+                MinWidth="60"
+                VerticalAlignment="Center"
+                Background="{Binding ElementName=codeMapList, Path=Background}"
+                Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
+                Text="{Binding ClassName, UpdateSourceTrigger=PropertyChanged}"
+                ToolTip="Class name filter" />
+            <TextBlock
+                Grid.Column="2"
+                Margin="5,0"
+                VerticalAlignment="Center"
+                Foreground="{Binding ElementName=codeMapList, Path=Foreground}">
+                .
+            </TextBlock>
+            <TextBox
+                Grid.Column="3"
+                MinWidth="60"
+                Margin="0,0,0,0"
+                VerticalAlignment="Center"
+                Background="{Binding ElementName=codeMapList, Path=Background}"
+                Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
+                Text="{Binding MemberName, UpdateSourceTrigger=PropertyChanged}"
+                ToolTip="Member name filter" />
+        </Grid>
+
         <ListBox
             x:Name="codeMapList"
             Grid.Row="1"
@@ -145,6 +112,7 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.Resources>
                     <Style TargetType="CheckBox">
@@ -171,19 +139,15 @@
                     x:Name="PublicMethods"
                     Grid.Row="0"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
                     Content="Public"
-                    IsChecked="{Binding PublicMethods}"
-                    Unchecked="SettingsChanged" />
+                    IsChecked="{Binding PublicMethods}" />
 
                 <CheckBox
                     x:Name="PrivateMethods"
                     Grid.Row="0"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
                     Content="Private"
-                    IsChecked="{Binding PrivateMethods}"
-                    Unchecked="SettingsChanged" />
+                    IsChecked="{Binding PrivateMethods}" />
                 <!--  ##########################################################  -->
                 <TextBlock
                     Grid.Row="1"
@@ -194,19 +158,15 @@
                     x:Name="PublicProperties"
                     Grid.Row="1"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
                     Content="Public"
-                    IsChecked="{Binding PublicProperties}"
-                    Unchecked="SettingsChanged" />
+                    IsChecked="{Binding PublicProperties}" />
 
                 <CheckBox
                     x:Name="PrivateProperties"
                     Grid.Row="1"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
                     Content="Private"
-                    IsChecked="{Binding PrivateProperties}"
-                    Unchecked="SettingsChanged" />
+                    IsChecked="{Binding PrivateProperties}" />
 
                 <!--  ##########################################################  -->
 
@@ -219,19 +179,22 @@
                     x:Name="PublicFields"
                     Grid.Row="2"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
                     Content="Public"
-                    IsChecked="{Binding PublicFields}"
-                    Unchecked="SettingsChanged" />
+                    IsChecked="{Binding PublicFields}" />
 
                 <CheckBox
                     x:Name="PrivateFields"
                     Grid.Row="2"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
                     Content="Private"
-                    IsChecked="{Binding PrivateFields}"
-                    Unchecked="SettingsChanged" />
+                    IsChecked="{Binding PrivateFields}" />
+
+                <CheckBox
+                    x:Name="SortMembers"
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Content="Sort"
+                    IsChecked="{Binding SortMembers}" />
             </Grid>
         </Expander>
     </Grid>

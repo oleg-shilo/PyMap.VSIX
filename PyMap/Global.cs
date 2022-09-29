@@ -42,6 +42,15 @@ namespace PyMap
             return (color.R + color.R + color.R + color.B + color.G + color.G + color.G + color.G) >> 3;
         }
 
+        public static bool IsBright(this Brush brush)
+        {
+            var c = ((SolidColorBrush)brush).Color;
+            const double brigthnessTreshold = 0.7;
+
+            return Math.Sqrt(c.R * c.R * .241 + c.G * c.G * .691 + c.B * c.B * .068) / 255 >= brigthnessTreshold;
+            //return (color.R + color.R + color.R + color.B + color.G + color.G + color.G + color.G) >> 3;
+        }
+
         public static bool StartsWithAny(this string text, params string[] patterns)
         {
             return patterns.Any(x => text.StartsWith(x));
@@ -201,7 +210,7 @@ namespace PyMap
 
         public MemberInfo[] Children;
 
-        public BitmapSource TypeIcon => (ToolWindow1Control.IsDarkVSTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
+        public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 
         public override string ToString()
         {
