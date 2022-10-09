@@ -1,10 +1,14 @@
 # CodeMap (ex-PyMap)
-This is a source code and defect tracking repository only. For all binaries please visit product page at [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OlegShilo.PyMap-2017).
-This extension is built for VS2022. You can download VS2019 version from the [Releases page](https://github.com/oleg-shilo/PyMap.VSIX/releases).
+It is preferred that you installed the extension via [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OlegShilo.PyMap-2017).
+This extension is built for VS2022. Though you can download VS2019 version from the [Releases page](https://github.com/oleg-shilo/PyMap.VSIX/releases).
+For older (pre VS2017) releases please visit [https://github.com/oleg-shilo/Retired-VSIX](https://github.com/oleg-shilo/Retired-VSIX).
 
 ---
 
-_The extension has been rebuild for VS2022 thus it may or may not work on older versions of VS. For older (pre VS2017) releases please visit [https://github.com/oleg-shilo/Retired-VSIX](https://github.com/oleg-shilo/Retired-VSIX)._
+This simple extension visualizes the code DOM objects defined in the active document. This extension is a for of the popular plugin that is available for:
+* Sublime Text 3 - [Sublime CodeMap plugin](https://github.com/oleg-shilo/sublime-codemap/blob/master/README.md)
+* Notepad++ - [Part of CS-Script.Npp plugin](https://github.com/oleg-shilo/cs-script.npp/blob/master/README.md)
+* VS Code - [CodeMap](https://marketplace.visualstudio.com/items?itemName=oleg-shilo.codemap)
 
 ## Overview
 
