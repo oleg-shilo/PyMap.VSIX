@@ -166,7 +166,11 @@ namespace PyMap
             try
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
-                var doc = dte.ActiveDocument;
+
+                Document doc = null;
+                try { doc = dte.ActiveDocument; } // can throw (e.g. project properties page)
+                catch { }
+
                 if (doc != null)
                 {
                     if (docFile != doc.FullName)
@@ -179,6 +183,7 @@ namespace PyMap
             catch (Exception ex)
             {
                 // the system may not be ready yet
+                parser.Clear();
                 parser.ErrorMessage = ex.Message;
             }
         }

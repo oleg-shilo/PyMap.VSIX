@@ -14,6 +14,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <local:KewordColorConverter x:Key="KewordColorConverter" />
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -25,7 +26,7 @@
         <Grid Margin="0,5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="auto" MaxWidth="120" />
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -37,23 +38,26 @@
             </TextBlock>
             <TextBox
                 Grid.Column="1"
-                MinWidth="60"
+                MinWidth="80"
                 VerticalAlignment="Center"
                 Background="{Binding ElementName=codeMapList, Path=Background}"
                 Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
                 Text="{Binding ClassName, UpdateSourceTrigger=PropertyChanged}"
-                ToolTip="Class name filter" />
+                ToolTip="Class name filter"
+                Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+
             <TextBlock
                 Grid.Column="2"
                 Margin="5,0"
                 VerticalAlignment="Center"
-                Foreground="{Binding ElementName=codeMapList, Path=Foreground}">
+                Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
+                Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}">
                 .
             </TextBlock>
             <TextBox
                 Grid.Column="3"
                 MinWidth="60"
-                Margin="0,0,0,0"
+                Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 Background="{Binding ElementName=codeMapList, Path=Background}"
                 Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
@@ -94,6 +98,18 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
+        <TextBox
+            Grid.Row="1"
+            TextWrapping="WrapWithOverflow"
+            Text="{Binding ErrorMessage}"
+            IsReadOnly="True"
+            BorderBrush="{x:Null}"
+            Visibility="{Binding IsErrorState, Converter={StaticResource ResourceKey=BoolToVisibilityConverter}}"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
+            Foreground="Red"></TextBox>
+
         <Expander
             Grid.Row="2"
             HorizontalAlignment="Left"
@@ -101,7 +117,8 @@
             ExpandDirection="Up"
             FlowDirection="LeftToRight"
             IsExpanded="false"
-            ToolTip="Adjust mapping settings">
+            ToolTip="Adjust mapping settings"
+            Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -117,6 +134,7 @@
                 <Grid.Resources>
                     <Style TargetType="CheckBox">
                         <Setter Property="Margin" Value="10,0,5,0" />
+                        <Setter Property="IsEnabled" Value="{Binding IsCSharp}" />
                         <Setter Property="VerticalAlignment" Value="Center" />
                         <Setter Property="Foreground" Value="{Binding ElementName=codeMapList, Path=Foreground}" />
                     </Style>

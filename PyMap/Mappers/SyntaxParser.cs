@@ -17,8 +17,13 @@ namespace PyMap
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            if (propertyName != nameof(ErrorMessage))
+            if (propertyName != nameof(ErrorMessage) &&
+                propertyName != nameof(IsErrorState) &&
+                propertyName != nameof(IsCSharp) &&
+                propertyName != nameof(IsPython))
+            {
                 MapInvalidated?.Invoke();
+            }
         }
 
         public ObservableCollection<MemberInfo> MemberList { get; set; } = new ObservableCollection<MemberInfo>();
@@ -78,7 +83,18 @@ namespace PyMap
             get => privateFields; set { privateFields = value; OnPropertyChanged(nameof(PrivateFields)); }
         }
 
+        bool isCSharp = true;
+
+        public bool IsCSharp
+        {
+            get => isCSharp; set { isCSharp = value; OnPropertyChanged(nameof(IsCSharp)); OnPropertyChanged(nameof(IsPython)); }
+        }
+
+        public bool IsPython => !isCSharp;
+
         string errorMessage;
+
+        public bool IsErrorState => !string.IsNullOrEmpty(ErrorMessage);
 
         public string ErrorMessage
         {
@@ -88,6 +104,7 @@ namespace PyMap
             {
                 errorMessage = value;
                 OnPropertyChanged(nameof(ErrorMessage));
+                OnPropertyChanged(nameof(IsErrorState));
             }
         }
 
@@ -100,6 +117,8 @@ namespace PyMap
         public bool CanParse(string file)
         {
             var fileType = Path.GetExtension(file).ToLower();
+            IsCSharp = (fileType == ".cs");
+
             return mappers.ContainsKey(fileType);
         }
 
@@ -119,13 +138,12 @@ namespace PyMap
                 var fileType = Path.GetExtension(file).ToLower();
                 var generateMap = mappers[fileType];
 
-                foreach (var type in generateMap(file))
+                foreach (var item in generateMap(file))
                 {
-                    if (ClassName?.Any() == true &&
-                        type.Title.IndexOf(ClassName, StringComparison.OrdinalIgnoreCase) == -1)
-                        continue;
-
-                    MemberList.Add(type);
+                    if (IsCSharp) // Python parser is primitive as classes and functions do not encode relationships. just plain list
+                        if (ClassName?.Any() == true &&
+                            item.Title.IndexOf(ClassName, StringComparison.OrdinalIgnoreCase) == -1)
+                            continue;
 
                     List<MemberInfo> typeMembers = new List<MemberInfo>();
 
@@ -137,11 +155,23 @@ namespace PyMap
                             return true;
                     }
 
-                    if (type.Children?.Any() == true)
+                    MemberInfo[] children = item.Children;
+
+                    if (item.MemberType == MemberType.Class || item.MemberType == MemberType.Interface)
+                    {
+                        MemberList.Add(item);
+                        children = item.Children;
+                    }
+                    else
+                    {
+                        children = new[] { item };
+                    }
+
+                    if (children?.Any() == true)
                     {
                         if (PublicMethods || PrivateMethods)
                         {
-                            var members = type.Children.Where(x => x.MemberType == MemberType.Method || x.MemberType == MemberType.Constructor);
+                            var members = children.Where(x => x.MemberType == MemberType.Method || x.MemberType == MemberType.Constructor);
 
                             if (!PublicMethods && PrivateMethods) members = members.Where(x => !x.IsPublic);
                             if (PublicMethods && !PrivateMethods) members = members.Where(x => x.IsPublic);
@@ -156,7 +186,7 @@ namespace PyMap
 
                         if (PublicProperties || PrivateProperties)
                         {
-                            var members = type.Children.Where(x => x.MemberType == MemberType.Property);
+                            var members = children.Where(x => x.MemberType == MemberType.Property);
 
                             if (!PublicProperties && PrivateProperties) members = members.Where(x => !x.IsPublic);
                             if (PublicProperties && !PrivateProperties) members = members.Where(x => x.IsPublic);
@@ -168,7 +198,7 @@ namespace PyMap
 
                         if (PublicFields || PrivateFields)
                         {
-                            var members = type.Children.Where(x => x.MemberType == MemberType.Field);
+                            var members = children.Where(x => x.MemberType == MemberType.Field);
 
                             if (!PublicFields && PrivateFields) members = members.Where(x => !x.IsPublic);
                             if (PublicFields && !PrivateFields) members = members.Where(x => x.IsPublic);
@@ -182,7 +212,9 @@ namespace PyMap
                     if (!SortMembers)
                         typeMembers = typeMembers.OrderBy(x => x.Line).ToList();
 
-                    typeMembers.ForEach(MemberList.Add);
+                    foreach (var member in typeMembers)
+                        MemberList.Add(member);
+                    // typeMembers.ForEach(MemberList.Add);
                 }
 
                 ErrorMessage = null;

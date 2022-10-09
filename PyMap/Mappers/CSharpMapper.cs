@@ -25,6 +25,48 @@ class CSharpMapper
                          .OrderBy(x => x.FullSpan.End)
                          .ToArray();
 
+        var globalMethods = nodes.OfType<GlobalStatementSyntax>()
+                                .Where(x => x.Statement.Kind() == SyntaxKind.LocalFunctionStatement)
+                                .OrderBy(x => x.FullSpan.End)
+                                .ToArray();
+
+        if (globalMethods.Any())
+        {
+            MemberInfo parent;
+            map.Add(parent = new MemberInfo
+            {
+                Line = 1,
+                Column = 1,
+                Title = "<global>",
+                MemberType = MemberType.Class,
+                MemberContext = ""
+            });
+
+            var members = new List<MemberInfo>();
+            foreach (var member in globalMethods)
+            {
+                var method = (member.Statement as LocalFunctionStatementSyntax);
+
+                //var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
+                var paramList = method.ParameterList.Parameters.ToString();
+
+                members.Add(new MemberInfo
+                {
+                    Line = method.GetLocation().GetLineSpan().StartLinePosition.Line,
+                    Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
+                    Content = method.Identifier.Text,
+                    MemberContext = " (" + paramList + ")",
+                    ContentType = "    ",
+                    IsPublic = true,
+                    MemberType = MemberType.Method
+                });
+            }
+
+            parent.Children = members.ToArray();
+        }
+
+        //////////////////////////////////////////////
+
         foreach (EnumDeclarationSyntax type in nodes.OfType<EnumDeclarationSyntax>())
         {
             var parentType = type.Parent as BaseTypeDeclarationSyntax;

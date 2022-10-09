@@ -7,7 +7,7 @@ class PythonMapper
 {
     public static IEnumerable<MemberInfo> Generate(string file)
     {
-        var result = new List<MemberInfo>();
+        var map = new List<MemberInfo>();
         var code = File.ReadAllLines(file);
 
         for (int i = 0; i < code.Length; i++)
@@ -23,27 +23,32 @@ class PythonMapper
                 if (line.StartsWith("@"))
                 {
                     info.ContentType = "@";
-                    info.Content = contentIndent + line.Substring("@".Length).Trim();
+                    info.Content = line.Substring("@".Length).Trim();
+                    if (info.Content == "property")
+                    {
+                        i++;
+                        line = code[i].TrimStart();
+                        info.Line = i;
+                        info.Content = line.Substring("def ".Length).TrimEnd().Split('(').FirstOrDefault();
+                    }
+                    info.MemberType = MemberType.Property;
                 }
                 else if (line.StartsWith("class"))
                 {
-                    if (result.Any())
-                        result.Add(new MemberInfo { Line = -1 });
                     info.MemberContext = ": class";
                     info.MemberType = MemberType.Class;
-                    info.Content = contentIndent + line.Substring("class ".Length).TrimEnd();
+                    info.Title = line.Substring("class ".Length).TrimEnd();
                 }
                 else
                 {
                     info.MemberContext = "";
                     info.MemberType = MemberType.Method;
-                    info.ContentType = "def";
-                    info.Content = line.Substring("def ".Length).TrimEnd();
+                    info.Content = line.Substring("def ".Length).TrimEnd().TrimEnd(':');
                 }
 
-                result.Add(info);
+                map.Add(info);
             }
         }
-        return result;
+        return map;
     }
 }
