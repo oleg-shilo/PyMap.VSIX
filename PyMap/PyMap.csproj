@@ -91,6 +91,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="changelog.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="index.html" />
     <Content Include="licence.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

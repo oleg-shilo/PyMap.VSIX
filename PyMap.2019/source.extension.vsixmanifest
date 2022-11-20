@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-	<Metadata>
-		<Identity Id="PyMap.Company.7e23d0e3-13e4-4af2-828a-433e71c2a335" Version="2.0.0.0" Language="en-US" Publisher="Oleg Shilo" />
-		<DisplayName>CodeMap (PyMap)</DisplayName>
-		<Description xml:space="preserve"> CodeMap is a code navigation (document outline) view for Python and C# source files.</Description>
-		<MoreInfo>https://github.com/oleg-shilo/PyMap.VSIX</MoreInfo>
-		<License>..\PyMap\licence.txt</License>
-		<Icon>package.ico</Icon>
-		<PreviewImage>Preview.png</PreviewImage>
-		<Tags>python, csharp, C#, editor, code, navigation, pymap</Tags>
-	</Metadata>
-	<Installation>
-		<InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)">
-		</InstallationTarget>
-	</Installation>
-	<!--<Dependencies>
+    <Metadata>
+        <Identity Id="PyMap.Company.7e23d0e3-13e4-4af2-828a-433e71c2a335" Version="2.0.0.1" Language="en-US" Publisher="Oleg Shilo" />
+        <DisplayName>CodeMap (PyMap)</DisplayName>
+        <Description xml:space="preserve"> CodeMap is a code navigation (document outline) view for Python and C# source files.</Description>
+        <MoreInfo>https://github.com/oleg-shilo/PyMap.VSIX</MoreInfo>
+        <License>..\PyMap\licence.txt</License>
+        <Icon>package.ico</Icon>
+        <PreviewImage>Preview.png</PreviewImage>
+        <Tags>python, csharp, C#, editor, code, navigation, pymap</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)">
+        </InstallationTarget>
+    </Installation>
+    <!--<Dependencies>
 		<Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
 	</Dependencies>
 	-->
-	<Prerequisites>
-		<Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
-	</Prerequisites>
-	<!--<Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <!--<Assets>
 		<Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
 	</Assets>-->
 </PackageManifest>

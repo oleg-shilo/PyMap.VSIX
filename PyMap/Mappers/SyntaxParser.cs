@@ -7,6 +7,7 @@ namespace PyMap
 {
     using System.ComponentModel;
     using System.IO;
+    using System.Threading;
 
     class SyntaxParser : INotifyPropertyChanged
     {
@@ -125,103 +126,112 @@ namespace PyMap
         Dictionary<string, Func<string, IEnumerable<MemberInfo>>> mappers = new Dictionary<string, Func<string, IEnumerable<MemberInfo>>>()
         {
             { ".cs", CSharpMapper.Generate },
+            { ".razor", CSharpMapper.Generate },
             { ".py", PythonMapper.Generate },
             { ".pyw", PythonMapper.Generate },
         };
 
         public void GenerateMap(string file)
         {
-            try
+            for (int i = 0; i < 3; i++)
             {
-                MemberList.Clear();
-
-                var fileType = Path.GetExtension(file).ToLower();
-                var generateMap = mappers[fileType];
-
-                foreach (var item in generateMap(file))
+                try
                 {
-                    if (IsCSharp) // Python parser is primitive as classes and functions do not encode relationships. just plain list
-                        if (ClassName?.Any() == true &&
-                            item.Title.IndexOf(ClassName, StringComparison.OrdinalIgnoreCase) == -1)
-                            continue;
+                    MemberList.Clear();
 
-                    List<MemberInfo> typeMembers = new List<MemberInfo>();
+                    var fileType = Path.GetExtension(file).ToLower();
+                    var generateMap = mappers[fileType];
 
-                    bool matchingMember(string name)
+                    foreach (var item in generateMap(file))
                     {
-                        if (MemberName?.Any() == true)
-                            return name.IndexOf(MemberName, StringComparison.OrdinalIgnoreCase) != -1;
-                        else
-                            return true;
-                    }
+                        // Only Python parser is primitive because classes and functions do not encode relationships.
+                        // just plain list. so ignore the class name filter
+                        if (!IsPython)
+                            if (ClassName?.Any() == true && // class name filter is set
+                                item.Title.IndexOf(ClassName, StringComparison.OrdinalIgnoreCase) == -1)
+                                continue;
 
-                    MemberInfo[] children = item.Children;
+                        List<MemberInfo> typeMembers = new List<MemberInfo>();
 
-                    if (item.MemberType == MemberType.Class || item.MemberType == MemberType.Interface)
-                    {
-                        MemberList.Add(item);
-                        children = item.Children;
-                    }
-                    else
-                    {
-                        children = new[] { item };
-                    }
-
-                    if (children?.Any() == true)
-                    {
-                        if (PublicMethods || PrivateMethods)
+                        bool matchingMember(string name)
                         {
-                            var members = children.Where(x => x.MemberType == MemberType.Method || x.MemberType == MemberType.Constructor);
+                            if (MemberName?.Any() == true)
+                                return name.IndexOf(MemberName, StringComparison.OrdinalIgnoreCase) != -1;
+                            else
+                                return true;
+                        }
 
-                            if (!PublicMethods && PrivateMethods) members = members.Where(x => !x.IsPublic);
-                            if (PublicMethods && !PrivateMethods) members = members.Where(x => x.IsPublic);
+                        MemberInfo[] children = item.Children;
 
-                            foreach (var m in members.OrderBy(x => x.MemberType != MemberType.Constructor)
-                                                     .ThenBy(x => x.ToString()))
+                        if (item.MemberType == MemberType.Class || item.MemberType == MemberType.Interface)
+                        {
+                            MemberList.Add(item);
+                            children = item.Children;
+                        }
+                        else
+                        {
+                            children = new[] { item };
+                        }
+
+                        if (children?.Any() == true)
+                        {
+                            if (PublicMethods || PrivateMethods)
                             {
-                                if (matchingMember(m.Content))
-                                    typeMembers.Add(m);
+                                var members = children.Where(x => x.MemberType == MemberType.Method || x.MemberType == MemberType.Constructor);
+
+                                if (!PublicMethods && PrivateMethods) members = members.Where(x => !x.IsPublic);
+                                if (PublicMethods && !PrivateMethods) members = members.Where(x => x.IsPublic);
+
+                                foreach (var m in members.OrderBy(x => x.MemberType != MemberType.Constructor)
+                                                         .ThenBy(x => x.ToString()))
+                                {
+                                    if (matchingMember(m.Content))
+                                        typeMembers.Add(m);
+                                }
+                            }
+
+                            if (PublicProperties || PrivateProperties)
+                            {
+                                var members = children.Where(x => x.MemberType == MemberType.Property);
+
+                                if (!PublicProperties && PrivateProperties) members = members.Where(x => !x.IsPublic);
+                                if (PublicProperties && !PrivateProperties) members = members.Where(x => x.IsPublic);
+
+                                foreach (var m in members.OrderBy(x => x.ToString()))
+                                    if (matchingMember(m.Content))
+                                        typeMembers.Add(m);
+                            }
+
+                            if (PublicFields || PrivateFields)
+                            {
+                                var members = children.Where(x => x.MemberType == MemberType.Field);
+
+                                if (!PublicFields && PrivateFields) members = members.Where(x => !x.IsPublic);
+                                if (PublicFields && !PrivateFields) members = members.Where(x => x.IsPublic);
+
+                                foreach (var m in members.OrderBy(x => x.ToString()))
+                                    if (matchingMember(m.Content))
+                                        typeMembers.Add(m);
                             }
                         }
 
-                        if (PublicProperties || PrivateProperties)
-                        {
-                            var members = children.Where(x => x.MemberType == MemberType.Property);
+                        if (!SortMembers)
+                            typeMembers = typeMembers.OrderBy(x => x.Line).ToList();
 
-                            if (!PublicProperties && PrivateProperties) members = members.Where(x => !x.IsPublic);
-                            if (PublicProperties && !PrivateProperties) members = members.Where(x => x.IsPublic);
-
-                            foreach (var m in members.OrderBy(x => x.ToString()))
-                                if (matchingMember(m.Content))
-                                    typeMembers.Add(m);
-                        }
-
-                        if (PublicFields || PrivateFields)
-                        {
-                            var members = children.Where(x => x.MemberType == MemberType.Field);
-
-                            if (!PublicFields && PrivateFields) members = members.Where(x => !x.IsPublic);
-                            if (PublicFields && !PrivateFields) members = members.Where(x => x.IsPublic);
-
-                            foreach (var m in members.OrderBy(x => x.ToString()))
-                                if (matchingMember(m.Content))
-                                    typeMembers.Add(m);
-                        }
+                        foreach (var member in typeMembers)
+                            MemberList.Add(member);
+                        // typeMembers.ForEach(MemberList.Add);
                     }
 
-                    if (!SortMembers)
-                        typeMembers = typeMembers.OrderBy(x => x.Line).ToList();
-
-                    foreach (var member in typeMembers)
-                        MemberList.Add(member);
-                    // typeMembers.ForEach(MemberList.Add);
+                    ErrorMessage = null;
+                    return;
                 }
-
-                ErrorMessage = null;
-            }
-            catch (Exception e)
-            {
-                ErrorMessage = e.Message;
+                catch (Exception e)
+                {
+                    ErrorMessage = e.Message;
+                }
+                // retrying as the file might be clocked
+                Thread.Sleep(400);
             }
         }
     }

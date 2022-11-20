@@ -14,7 +14,20 @@ class CSharpMapper
     {
         var map = new List<MemberInfo>();
 
-        var code = File.ReadAllText(file);
+        string code;
+
+        int lineOffset = 0;
+
+        if (file.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+        {
+            var lines = File.ReadAllLines(file);
+            var htmlLines = lines.TakeWhile(x => !x.TrimStart().StartsWith("@code {"));
+            lineOffset = htmlLines.Count() + 1;
+            code = string.Join(Environment.NewLine, lines.Skip(lineOffset).Take(lines.Count() - lineOffset - 1)); // first and last are to be removed
+        }
+        else
+            code = File.ReadAllText(file);
+
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
 
         var root = tree.GetRoot();
@@ -52,7 +65,7 @@ class CSharpMapper
 
                 members.Add(new MemberInfo
                 {
-                    Line = method.GetLocation().GetLineSpan().StartLinePosition.Line,
+                    Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                     Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = method.Identifier.Text,
                     MemberContext = " (" + paramList + ")",
@@ -73,7 +86,7 @@ class CSharpMapper
 
             map.Add(new MemberInfo
             {
-                Line = type.GetLocation().GetLineSpan().StartLinePosition.Line,
+                Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
                 MemberContext = ": enum",
@@ -86,7 +99,7 @@ class CSharpMapper
             MemberInfo parent;
             map.Add(parent = new MemberInfo
             {
-                Line = type.GetLocation().GetLineSpan().StartLinePosition.Line,
+                Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
                 MemberType = MemberType.Class,
@@ -113,7 +126,7 @@ class CSharpMapper
 
                     members.Add(new MemberInfo
                     {
-                        Line = method.GetLocation().GetLineSpan().StartLinePosition.Line,
+                        Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
                         MemberContext = " (" + paramList + ")",
@@ -131,7 +144,7 @@ class CSharpMapper
 
                     members.Add(new MemberInfo
                     {
-                        Line = method.GetLocation().GetLineSpan().StartLinePosition.Line,
+                        Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
@@ -145,7 +158,7 @@ class CSharpMapper
                     var prop = (member as PropertyDeclarationSyntax);
                     members.Add(new MemberInfo
                     {
-                        Line = prop.GetLocation().GetLineSpan().StartLinePosition.Line,
+                        Line = prop.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = prop.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = prop.Identifier.ValueText,
                         ContentType = "    ",
@@ -159,7 +172,7 @@ class CSharpMapper
 
                     members.Add(new MemberInfo
                     {
-                        Line = field.GetLocation().GetLineSpan().StartLinePosition.Line,
+                        Line = field.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = field.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = field.Declaration.Variables.First().Identifier.Text,
                         ContentType = "    ",
@@ -177,6 +190,8 @@ class CSharpMapper
                                     })
                              .OrderBy(x => x.MemberType)
                              .ToList();
+
+            // members.ForEach(x => x.Line += lineOffset);
 
             parent.Children = members.ToArray();
         }
