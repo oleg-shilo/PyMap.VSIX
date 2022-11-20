@@ -16,7 +16,7 @@ _Code Tree viewer for Python and C# source code._
 
 Historically, this extension was created to address the absence of the code tree/map view functionality for "Python Tools for Visual Studio" (PTVS). Thus some users can remember this tool by the name of PyMap. Starting from v2.0 it has been extended with the support for C# and has been renamed into CodeMap.
 
-The usage is straight forward and dead simple. Open any C# or Python file and PyMap will automatically build a code tree. This tree will be automatically updated when the active VS document is saved or another document tab activated.
+The usage is straight forward and dead simple. Open any C#, .razor or Python file and PyMap will automatically build a code tree. This tree will be automatically updated when the active VS document is saved or another document tab activated.
 
 Clicking the item in the code tree will navigate to the location of the code element in the document.
 
@@ -48,7 +48,7 @@ One may ask "Why then not just allow the extra flexibility in some of the existi
 
 I have contacted the owned of CodeMap and tried to contribute some this flexibility to the excellent CodeMaid. I did it twice. But amy PRs were not accepted. I am not complaining as avery OpenSource product author is absolutely entitled to have his/her own vision of the product evolution. Even if the proposed changes are not about changing the product but only about extra customization. Thus I have taken my older extension and improved it to meet the my own and hopefully other people expectations. And of course I am fully open to the suggestions regarding the extension functionality.
 
-### CodeMap - C#
+### CodeMap - C# (or .razor)
 
 ![](docs/Preview.png)
 
