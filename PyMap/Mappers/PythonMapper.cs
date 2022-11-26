@@ -23,7 +23,7 @@ class PythonMapper
                 if (line.StartsWith("@"))
                 {
                     info.ContentType = "@";
-                    info.Content = line.Substring("@".Length).Trim();
+                    info.Content = line.Substring("@".Length).Trim().Deflate();
                     if (info.Content == "property")
                     {
                         i++;

@@ -20,10 +20,12 @@ class CSharpMapper
 
         if (file.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
         {
+            var className = Path.GetFileNameWithoutExtension(file).Replace("-", "_");
             var lines = File.ReadAllLines(file);
             var htmlLines = lines.TakeWhile(x => !x.TrimStart().StartsWith("@code {"));
-            lineOffset = htmlLines.Count() + 1;
-            code = string.Join(Environment.NewLine, lines.Skip(lineOffset).Take(lines.Count() - lineOffset - 1)); // first and last are to be removed
+            lineOffset = htmlLines.Count();
+            code = string.Join(Environment.NewLine, lines.Skip(lineOffset).Take(lines.Count() - lineOffset)); // first and last are to be removed
+            code = code.Replace("@code {", $"public class {className} {{");
         }
         else
             code = File.ReadAllText(file);
@@ -61,7 +63,7 @@ class CSharpMapper
                 var method = (member.Statement as LocalFunctionStatementSyntax);
 
                 //var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
-                var paramList = method.ParameterList.Parameters.ToString();
+                var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
                 members.Add(new MemberInfo
                 {
@@ -122,7 +124,7 @@ class CSharpMapper
                     var method = (member as MethodDeclarationSyntax);
 
                     //var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
-                    var paramList = method.ParameterList.Parameters.ToString();
+                    var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
                     members.Add(new MemberInfo
                     {
@@ -140,7 +142,7 @@ class CSharpMapper
                     var method = (member as ConstructorDeclarationSyntax);
 
                     // var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
-                    var paramList = method.ParameterList.Parameters.ToString();
+                    var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
                     members.Add(new MemberInfo
                     {
@@ -198,4 +200,10 @@ class CSharpMapper
 
         return map;
     }
+}
+
+static class Extensions
+{
+    public static string Deflate(this string text)
+        => string.Join(" ", text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
 }

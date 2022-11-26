@@ -118,7 +118,7 @@ namespace PyMap
         public bool CanParse(string file)
         {
             var fileType = Path.GetExtension(file).ToLower();
-            IsCSharp = (fileType == ".cs");
+            IsCSharp = (fileType == ".cs" || fileType == ".razor");
 
             return mappers.ContainsKey(fileType);
         }
