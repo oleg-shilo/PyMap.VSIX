@@ -1,5 +1,8 @@
-Release v2.0.2.0
+Release v2.0.3.0
 - Fixed unconditional removal of private fields
+
+Release v2.0.2.0
+- Razor support improvements.
 
 Release v2.0.1.0
 - Added support for `.razor` files
