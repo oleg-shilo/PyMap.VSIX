@@ -184,14 +184,7 @@ class CSharpMapper
                 }
             }
 
-            members = members.Where(x =>
-                                    {
-                                        if (x.MemberType == MemberType.Property || x.MemberType == MemberType.Field)
-                                            return x.IsPublic;
-                                        return true;
-                                    })
-                             .OrderBy(x => x.MemberType)
-                             .ToList();
+            members = members.OrderBy(x => x.MemberType).ToList();
 
             // members.ForEach(x => x.Line += lineOffset);
 
