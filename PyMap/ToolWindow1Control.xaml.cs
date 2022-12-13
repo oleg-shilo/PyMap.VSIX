@@ -190,28 +190,31 @@ namespace PyMap
 
         void NavigateToSelectedMember()
         {
-            for (int i = 0; i < 3; i++)
+            try
             {
+                var info = codeMapList.SelectedItem as MemberInfo;
+                if (info != null)
+                {
+                    if (info.Line != -1)
+                    {
+                        IWpfTextView textView = Global.GetTextView();
+                        textView.MoveCaretToLine(info.Line);
+                    }
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+                // the system may not be ready yet
+                // and throw even for the already loaded file
+                // Saving document seems to be a good reset for the IDE
+                // parser.ErrorMessage = ex.Message;
                 try
                 {
-                    var info = codeMapList.SelectedItem as MemberInfo;
-                    if (info != null)
-                    {
-                        if (info.Line != -1)
-                        {
-                            IWpfTextView textView = Global.GetTextView();
-                            textView.MoveCaretToLine(info.Line);
-                        }
-                    }
-                    return;
+                    ThreadHelper.ThrowIfNotOnUIThread();
+                    dte.ActiveDocument.Save();
                 }
-                catch (Exception ex)
-                {
-                    // the system may not be ready yet
-                    // and throw even for the already loaded file
-                    // parser.ErrorMessage = ex.Message;
-                }
-                System.Threading.Thread.Sleep(200);
+                catch { }
             }
         }
 
