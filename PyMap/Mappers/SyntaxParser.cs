@@ -40,6 +40,12 @@ namespace PyMap
         bool sortMembers = true;
         string className;
         string memberName;
+        bool autoSynch;
+
+        public bool AutoSynch
+        {
+            get => autoSynch; set { autoSynch = value; OnPropertyChanged(nameof(AutoSynch)); }
+        }
 
         public bool SortMembers
         {
@@ -232,22 +238,19 @@ namespace PyMap
                 {
                     ErrorMessage = e.Message;
                 }
-                // retrying as the file might be clocked
+                // retrying as the file might be locked
                 Thread.Sleep(400);
             }
         }
 
-
-        // public BitmapSource SynchIcon => (ExtensionHost.IsDarkTheme ? GenericImages.SynchDark : GenericImages.SynchLight);
         public BitmapSource SynchIcon => AppImages.Synch;
-        public BitmapSource PrivateOverlayIcon => AppImages.PrivateOverlay;
 
+        public BitmapSource PrivateOverlayIcon => AppImages.PrivateOverlay;
     }
 
     public class AppImages
     {
         public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
         public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
-
     }
 }

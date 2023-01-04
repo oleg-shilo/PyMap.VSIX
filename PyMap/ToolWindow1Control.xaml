@@ -69,8 +69,8 @@
                 Grid.Column="4"
                 Width="17"
                 Height="17"
-                Margin="0,0,5,0"
-                MouseDown="Image_MouseDown"
+                Margin="0,0,5,1"
+                MouseDown="SynchButton_MouseDown"
                 Source="{Binding SynchIcon}"
                 Stretch="Fill"
                 ToolTip="Synchronize map tree with the code view"
@@ -231,6 +231,14 @@
                     Grid.Column="1"
                     Content="Sort"
                     IsChecked="{Binding SortMembers}" />
+
+                <CheckBox
+                    x:Name="AutoSynch"
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    Content="Auto-Synch"
+                    IsChecked="{Binding AutoSynch}"
+                    ToolTip="Auto-synchronize map tree with the code view on the change of the caret position." />
             </Grid>
         </Expander>
     </Grid>
