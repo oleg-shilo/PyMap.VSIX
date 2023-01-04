@@ -8,6 +8,7 @@ namespace PyMap
     using System.ComponentModel;
     using System.IO;
     using System.Threading;
+    using System.Windows.Media.Imaging;
 
     class SyntaxParser : INotifyPropertyChanged
     {
@@ -15,11 +16,12 @@ namespace PyMap
 
         public event Action MapInvalidated;
 
-        protected void OnPropertyChanged(string propertyName)
+        public void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (propertyName != nameof(ErrorMessage) &&
                 propertyName != nameof(IsErrorState) &&
+                propertyName != nameof(SynchIcon) &&
                 propertyName != nameof(IsCSharp) &&
                 propertyName != nameof(IsPython))
             {
@@ -234,5 +236,18 @@ namespace PyMap
                 Thread.Sleep(400);
             }
         }
+
+
+        // public BitmapSource SynchIcon => (ExtensionHost.IsDarkTheme ? GenericImages.SynchDark : GenericImages.SynchLight);
+        public BitmapSource SynchIcon => AppImages.Synch;
+        public BitmapSource PrivateOverlayIcon => AppImages.PrivateOverlay;
+
+    }
+
+    public class AppImages
+    {
+        public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
+
     }
 }

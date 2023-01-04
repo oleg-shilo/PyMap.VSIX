@@ -108,6 +108,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <EmbeddedResource Include="Resources\icons\dark\synch.png" />
+    <EmbeddedResource Include="Resources\icons\light\private.png" />
+    <EmbeddedResource Include="Resources\icons\light\synch.png" />
+    <Content Include="synch.png" />
     <EmbeddedResource Include="Resources\icons\dark\class.png" />
     <EmbeddedResource Include="Resources\icons\dark\field.png" />
     <EmbeddedResource Include="Resources\icons\dark\interface.png" />
@@ -120,6 +124,7 @@
     <EmbeddedResource Include="Resources\icons\light\method.png" />
     <EmbeddedResource Include="Resources\icons\light\methodconstructor.png" />
     <EmbeddedResource Include="Resources\icons\light\property.png" />
+    <EmbeddedResource Include="Resources\icons\dark\private.png" />
     <Content Include="Resources\ToolWindow1Command.png" />
     <Content Include="Resources\ToolWindow1Package.ico" />
     <VSCTCompile Include="PyMapPackage.vsct">

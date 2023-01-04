@@ -29,6 +29,7 @@
                 <ColumnDefinition Width="auto" MaxWidth="120" />
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 Margin="5,0"
@@ -63,6 +64,17 @@
                 Foreground="{Binding ElementName=codeMapList, Path=Foreground}"
                 Text="{Binding MemberName, UpdateSourceTrigger=PropertyChanged}"
                 ToolTip="Member name filter" />
+            <Image
+                x:Name="SynckButton"
+                Grid.Column="4"
+                Width="17"
+                Height="17"
+                Margin="0,0,5,0"
+                MouseDown="Image_MouseDown"
+                Source="{Binding SynchIcon}"
+                Stretch="Fill"
+                ToolTip="Synchronize map tree with the code view"
+                Visibility="Visible" />
         </Grid>
 
         <ListBox
@@ -79,11 +91,17 @@
                         <!--  Background="{Binding Color, Converter={StaticResource KewordColorConverter}}">  -->
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Foreground="{x:Null}" Text="{Binding ContentType}" />
-                            <Image
-                                x:Name="temaplateRoot"
-                                VerticalAlignment="Center"
-                                Source="{Binding TypeIcon}"
-                                Stretch="Fill" />
+                            <Grid>
+                                <Image
+                                    x:Name="temaplateRoot"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding TypeIcon}"
+                                    Stretch="Fill" />
+                                <Image
+                                    VerticalAlignment="Center"
+                                    Source="{Binding AccessType}"
+                                    Stretch="Fill" />
+                            </Grid>
                             <TextBlock FontWeight="Normal" Text="{Binding Content}" />
                             <TextBlock FontWeight="Bold" Text="{Binding Title}" />
                             <TextBlock
@@ -100,15 +118,15 @@
 
         <TextBox
             Grid.Row="1"
-            TextWrapping="WrapWithOverflow"
-            Text="{Binding ErrorMessage}"
-            IsReadOnly="True"
-            BorderBrush="{x:Null}"
-            Visibility="{Binding IsErrorState, Converter={StaticResource ResourceKey=BoolToVisibilityConverter}}"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
-            Foreground="Red"></TextBox>
+            BorderBrush="{x:Null}"
+            Foreground="Red"
+            IsReadOnly="True"
+            Text="{Binding ErrorMessage}"
+            TextWrapping="WrapWithOverflow"
+            Visibility="{Binding IsErrorState, Converter={StaticResource ResourceKey=BoolToVisibilityConverter}}" />
 
         <Expander
             Grid.Row="2"

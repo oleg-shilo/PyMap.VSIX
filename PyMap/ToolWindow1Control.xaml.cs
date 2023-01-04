@@ -1,14 +1,23 @@
-﻿using System;
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+// using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text.Editor;
-using EnvDTE;
-using EnvDTE80;
+using System.Windows.Threading;
 
 namespace PyMap
 {
@@ -16,6 +25,8 @@ namespace PyMap
     {
         public static bool IsDarkTheme;
     }
+
+
 
     /// <summary>
     /// Interaction logic for ToolWindow1Control.
@@ -25,9 +36,13 @@ namespace PyMap
         static ToolWindow1Control Instance;
 
         CommandEvents commandEvents;
+        // TextEditorEvents textEditorEvents;
+        SelectionEvents selectionEvents;
+
         DTE2 dte;
         SyntaxParser parser = new SyntaxParser();
         FileSystemWatcher watcher = new FileSystemWatcher();
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Control"/> class.
@@ -42,15 +57,30 @@ namespace PyMap
 
             this.DataContext = this.parser;
 
+            // any changes in IDE should trigger checking if the active doc is pointing to a different file and the map needs to regenerated 
             this.dte = Global.GetDTE2();
             commandEvents = dte.Events.CommandEvents;
             commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
+            // watcher's filter (file being watched) is updated every time the map is refreshed 
             watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
             watcher.Changed += Watcher_Changed;
             watcher.Created += Watcher_Changed;
             watcher.Deleted += Watcher_Changed;
             watcher.Renamed += Watcher_Changed;
+
+            // when caret position is changed in the doc check if the code tree selection should change
+            // textEditorEvents = dte.Events.TextEditorEvents;
+            // textEditorEvents.LineChanged  // += (point, endPoint, hint) =>
+            selectionEvents = dte.Events.SelectionEvents; // it is not text-selection change but a current document tab change
+            selectionEvents.OnChange += () =>
+            {
+                try
+                {
+                    Debug.WriteLine($"selectionEvents.OnChange ");
+                }
+                catch { }
+            };
 
             ReadSettings();
 
@@ -58,11 +88,26 @@ namespace PyMap
             parser.MapInvalidated += () => RefreshMap(force: true);
 
             initialized = true;
+
+            this.Loaded += ToolWindow1Control_Loaded;
+
+            // SynckButton.Source = "PyMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage();
         }
 
+        private void ToolWindow1Control_Loaded(object sender, RoutedEventArgs e)
+        {
+            ExtensionHost.IsDarkTheme = !codeMapList.Background.IsBright();
+            parser.OnPropertyChanged(nameof(SyntaxParser.SynchIcon));
+        }
+
+        bool skipNextSelectionChange = false;
         private void CodeMapList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            NavigateToSelectedMember();
+            if (skipNextSelectionChange)
+                skipNextSelectionChange = false;
+            else
+                NavigateToSelectedMember();
+
         }
 
         void SettingsChanged(object sender, RoutedEventArgs e)
@@ -161,6 +206,7 @@ namespace PyMap
         string docFile = null;
         DateTime? docFileTimestamp = null;
 
+
         void CommandEvents_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
         {
             try
@@ -187,7 +233,7 @@ namespace PyMap
                 parser.ErrorMessage = ex.Message;
             }
         }
-
+        int lastAutoRecover = Environment.TickCount;
         void NavigateToSelectedMember()
         {
             try
@@ -201,22 +247,37 @@ namespace PyMap
                         textView.MoveCaretToLine(info.Line);
                     }
                 }
-                return;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // the system may not be ready yet
                 // and throw even for the already loaded file
                 // Saving document seems to be a good reset for the IDE
                 // parser.ErrorMessage = ex.Message;
+
+                if ((Environment.TickCount - lastAutoRecover) > 1000)
+                {
+                    lastAutoRecover = Environment.TickCount;
+                    ScheduleSaveDoc(700);
+                }
+            }
+        }
+
+        void ScheduleSaveDoc(int delay)
+        {
+            _ = Task.Run(async () =>
+            {
+                System.Threading.Thread.Sleep(delay);
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 try
                 {
-                    ThreadHelper.ThrowIfNotOnUIThread();
                     dte.ActiveDocument.Save();
                 }
                 catch { }
-            }
+
+            });
         }
+
 
         void RefreshMap(bool force = false)
         {
@@ -231,6 +292,7 @@ namespace PyMap
                             ExtensionHost.IsDarkTheme = !codeMapList.Background.IsBright();
 
                             parser.GenerateMap(docFile);
+                            parser.OnPropertyChanged(nameof(parser.SynchIcon));
                             docFileTimestamp = File.GetLastWriteTimeUtc(docFile);
                         }
 
@@ -283,5 +345,51 @@ namespace PyMap
                 img.Width = img.ActualHeight;
             }
         }
+
+        private void Image_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                var currLine = Global.GetTextView().Selection.Start.Position.GetContainingLineNumber();
+                var correspondingMember = this.parser.MemberList.OrderBy(x => x.Line).TakeWhile(x => x.Line <= currLine).LastOrDefault();
+
+                if (codeMapList.SelectedItem != correspondingMember)
+                {
+                    skipNextSelectionChange = true;
+                    codeMapList.SelectedItem = correspondingMember;
+                    codeMapList.ScrollIntoView(codeMapList.SelectedItem);
+                }
+            }
+            catch { }
+
+        }
+    }
+
+
+    internal class IDEEventsListener : IVsRunningDocTableEvents3
+    {
+        public int OnBeforeSave(uint docCookie)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterFirstDocumentLock(uint docCookie, uint dwRDTLockType, uint dwReadLocksRemaining, uint dwEditLocksRemaining) => VSConstants.S_OK;
+
+        public int OnBeforeLastDocumentUnlock(uint docCookie, uint dwRDTLockType, uint dwReadLocksRemaining, uint dwEditLocksRemaining) => VSConstants.S_OK;
+
+        public int OnAfterSave(uint docCookie) => VSConstants.S_OK;
+
+        public int OnAfterAttributeChange(uint docCookie, uint grfAttribs) => VSConstants.S_OK;
+
+        public int OnBeforeDocumentWindowShow(uint docCookie, int fFirstShow, IVsWindowFrame pFrame) => VSConstants.S_OK;
+
+        public int OnAfterDocumentWindowHide(uint docCookie, IVsWindowFrame pFrame) => VSConstants.S_OK;
+
+        public int OnAfterAttributeChangeEx(uint docCookie, uint grfAttribs, IVsHierarchy pHierOld, uint itemidOld, string pszMkDocumentOld, IVsHierarchy pHierNew, uint itemidNew, string pszMkDocumentNew) => VSConstants.S_OK;
+
+        public void OnAfterDocumentLockCountChanged(uint docCookie, uint dwRDTLockType, uint dwOldLockCount, uint dwNewLockCount)
+        { }
     }
 }

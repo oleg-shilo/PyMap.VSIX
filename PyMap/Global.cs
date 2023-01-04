@@ -1,3 +1,11 @@
+using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Package;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,14 +18,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Package;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
-using EnvDTE;
-using EnvDTE80;
 
 // using PyMap.Resources.icons.dark;
 
@@ -165,6 +165,7 @@ namespace PyMap
 
     public class MemberInfoImages
     {
+
         static public Dictionary<MemberType, BitmapSource> Dark = new Dictionary<MemberType, BitmapSource>
         {
             { MemberType.Interface,  "PyMap.Resources.icons.dark.interface.png".LoadAsEmbeddedResourceImage() },
@@ -211,6 +212,9 @@ namespace PyMap
         public MemberInfo[] Children;
 
         public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
+        public BitmapSource AccessType => (IsPublic || MemberType == MemberType.Interface || MemberType == MemberType.Class)
+                                            ? null
+                                            : AppImages.PrivateOverlay;
 
         public override string ToString()
         {
