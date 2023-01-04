@@ -35,6 +35,7 @@ namespace PyMap
         static ToolWindow1Control Instance;
 
         CommandEvents commandEvents;
+        WindowEvents windowEvents;
         // TextEditorEvents textEditorEvents;   // The same as for SelectionEvents, it's not suitable for detection of the caret position
 
         DTE2 dte;
@@ -58,7 +59,10 @@ namespace PyMap
             // any changes in IDE should trigger checking if the active doc is pointing to a different file and the map needs to regenerated
             this.dte = Global.GetDTE2();
             commandEvents = dte.Events.CommandEvents;
-            commandEvents.AfterExecute += CommandEvents_AfterExecute;
+            windowEvents = dte.Events.WindowEvents;
+
+            commandEvents.AfterExecute += (a, b, c, d) => RefreshMapIfRequired();
+            windowEvents.WindowActivated += (a, b) => RefreshMapIfRequired();
 
             // watcher's filter (file being watched) is updated every time the map is refreshed
             watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
@@ -166,18 +170,18 @@ namespace PyMap
             catch { }
         }
 
+        // TODO: need to automate serialization
         string SerializeSettings()
         {
-            return $"FontFamily:{codeMapList.FontFamily}\n" +
-                   $"FontSize:{codeMapList.FontSize}\n" +
+            return $"FontSize:{codeMapList.FontSize}\n" +
                    $"PublicMethods:{parser.PublicMethods}\n" +
                    $"PublicProperties:{parser.PublicProperties}\n" +
                    $"PublicFields:{parser.PublicFields}\n" +
                    $"PrivateMethods:{parser.PrivateMethods}\n" +
                    $"PrivateProperties:{parser.PrivateProperties}\n" +
                    $"PrivateFields:{parser.PrivateFields}\n" +
-                   $"AutoSynch:{parser.AutoSynch}\n" +
-                   $"FontWeight:{codeMapList.FontWeight}";
+                   $"SortMembers:{parser.SortMembers}\n" +
+                   $"AutoSynch:{parser.AutoSynch}";
         }
 
         void ApplySettings(string settings)
@@ -199,6 +203,8 @@ namespace PyMap
                 else if (item.Key == "PrivateProperties") parser.PrivateProperties = bool.Parse(item.Value);
                 else if (item.Key == "PrivateFields") parser.PrivateFields = bool.Parse(item.Value);
                 else if (item.Key == "PrivateMethods") parser.PrivateMethods = bool.Parse(item.Value);
+                else if (item.Key == "SortMembers") parser.SortMembers = bool.Parse(item.Value);
+                else if (item.Key == "AutoSynch") parser.AutoSynch = bool.Parse(item.Value);
                 else if (item.Key == "FontSize" && double.TryParse(item.Value, out double new_size)) codeMapList.FontSize = new_size;
             }
         }
@@ -215,7 +221,7 @@ namespace PyMap
         string docFile = null;
         DateTime? docFileTimestamp = null;
 
-        void CommandEvents_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
+        void RefreshMapIfRequired()
         {
             try
             {
