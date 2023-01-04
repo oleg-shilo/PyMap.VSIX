@@ -1,3 +1,12 @@
+Release v2.1.0.0
+- Issue #6: Instant map update after changing focus to a different document / Save settings on chekbox-click / Save vertical scroll value per document
+- Added access type icons (#5)
+- Added 'auto-synch' option
+- Added "Synch tree selection with code caret position"
+- Implemented auto refresh on change of IDE theme
+- Improved stability of navigation on click
+
+
 Release v2.0.3.0
 - Fixed unconditional removal of private fields
 

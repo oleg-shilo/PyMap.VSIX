@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PyMap.vs2019", "PyMap.2019\PyMap.vs2019.csproj", "{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PyMap", "PyMap\PyMap.csproj", "{EC266248-44AC-4F99-84AE-CF6DA8EBC143}"
 EndProject
 Global
@@ -17,18 +15,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Debug|arm64.ActiveCfg = Debug|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Debug|arm64.Build.0 = Debug|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Debug|x86.ActiveCfg = Debug|x86
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Debug|x86.Build.0 = Debug|x86
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Release|arm64.ActiveCfg = Release|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Release|arm64.Build.0 = Release|Any CPU
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Release|x86.ActiveCfg = Release|x86
-		{8DB7F6DC-F3AB-4E98-805E-95156B835BAC}.Release|x86.Build.0 = Release|x86
 		{EC266248-44AC-4F99-84AE-CF6DA8EBC143}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC266248-44AC-4F99-84AE-CF6DA8EBC143}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC266248-44AC-4F99-84AE-CF6DA8EBC143}.Debug|arm64.ActiveCfg = Debug|arm64
