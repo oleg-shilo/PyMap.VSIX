@@ -1,3 +1,6 @@
+Release v2.1.1.0
+- Fixed problem with settings being saved on checkbox state change to `checked` nut not `unchecked`
+
 Release v2.1.0.0
 - Issue #6: Instant map update after changing focus to a different document / Save settings on chekbox-click / Save vertical scroll value per document
 - Added access type icons (#5)

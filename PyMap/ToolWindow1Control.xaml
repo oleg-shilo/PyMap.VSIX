@@ -175,7 +175,7 @@
                     x:Name="PublicMethods"
                     Grid.Row="0"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Public"
                     IsChecked="{Binding PublicMethods}" />
 
@@ -183,7 +183,7 @@
                     x:Name="PrivateMethods"
                     Grid.Row="0"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Private"
                     IsChecked="{Binding PrivateMethods}" />
                 <!--  ##########################################################  -->
@@ -196,7 +196,7 @@
                     x:Name="PublicProperties"
                     Grid.Row="1"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Public"
                     IsChecked="{Binding PublicProperties}" />
 
@@ -204,7 +204,7 @@
                     x:Name="PrivateProperties"
                     Grid.Row="1"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Private"
                     IsChecked="{Binding PrivateProperties}" />
 
@@ -219,7 +219,7 @@
                     x:Name="PublicFields"
                     Grid.Row="2"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Public"
                     IsChecked="{Binding PublicFields}" />
 
@@ -227,7 +227,7 @@
                     x:Name="PrivateFields"
                     Grid.Row="2"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Private"
                     IsChecked="{Binding PrivateFields}" />
 
@@ -235,7 +235,7 @@
                     x:Name="SortMembers"
                     Grid.Row="3"
                     Grid.Column="1"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Sort"
                     IsChecked="{Binding SortMembers}" />
 
@@ -243,7 +243,7 @@
                     x:Name="AutoSynch"
                     Grid.Row="3"
                     Grid.Column="2"
-                    Checked="SettingsChanged"
+                    Click ="SettingsChanged"
                     Content="Auto-Synch"
                     IsChecked="{Binding AutoSynch}"
                     ToolTip="Auto-synchronize map tree with the code view on the change of the caret position." />
