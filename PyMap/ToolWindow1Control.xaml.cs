@@ -85,7 +85,7 @@ namespace PyMap
 
         int lastCaretPosition = -1;
 
-        void CshckCurrentCaretPosition()
+        void CheckCurrentCaretPosition()
         {
             try
             {
@@ -99,13 +99,15 @@ namespace PyMap
         void CheckIfThemeChanged()
         {
             if (parser.AutoSynch)
-                CshckCurrentCaretPosition();
+                CheckCurrentCaretPosition();
             try
             {
                 var isCurrentThemeDark = !codeMapList.Background.IsBright();
                 if (ExtensionHost.IsDarkTheme != isCurrentThemeDark)
                 {
                     ExtensionHost.IsDarkTheme = isCurrentThemeDark;
+
+                    parser.OnThemChange();
                     RefreshMap(true);
                 }
             }
@@ -306,7 +308,7 @@ namespace PyMap
                             ExtensionHost.IsDarkTheme = !codeMapList.Background.IsBright();
 
                             parser.GenerateMap(docFile);
-                            parser.OnPropertyChanged(nameof(parser.SynchIcon));
+
                             docFileTimestamp = File.GetLastWriteTimeUtc(docFile);
                         }
 
@@ -375,6 +377,12 @@ namespace PyMap
                 }
             }
             catch { }
+        }
+
+        private void ClearButton_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            parser.ClassName = "";
+            parser.MemberName = "";
         }
     }
 }

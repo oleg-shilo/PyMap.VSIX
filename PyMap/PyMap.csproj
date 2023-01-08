@@ -111,7 +111,10 @@
     <EmbeddedResource Include="Resources\icons\dark\synch.png" />
     <EmbeddedResource Include="Resources\icons\light\private.png" />
     <EmbeddedResource Include="Resources\icons\light\synch.png" />
-    <Content Include="synch.png" />
+    <EmbeddedResource Include="Resources\icons\dark\clear.png" />
+    <EmbeddedResource Include="Resources\icons\dark\filter.png" />
+    <EmbeddedResource Include="Resources\icons\light\clear.png" />
+    <EmbeddedResource Include="Resources\icons\light\filter.png" />
     <EmbeddedResource Include="Resources\icons\dark\class.png" />
     <EmbeddedResource Include="Resources\icons\dark\field.png" />
     <EmbeddedResource Include="Resources\icons\dark\interface.png" />

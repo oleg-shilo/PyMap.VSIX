@@ -21,12 +21,18 @@ namespace PyMap
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (propertyName != nameof(ErrorMessage) &&
                 propertyName != nameof(IsErrorState) &&
-                propertyName != nameof(SynchIcon) &&
                 propertyName != nameof(IsCSharp) &&
                 propertyName != nameof(IsPython))
             {
                 MapInvalidated?.Invoke();
             }
+        }
+
+        public void OnThemChange()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SynchIcon)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClearIcon)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterIcon)));
         }
 
         public ObservableCollection<MemberInfo> MemberList { get; set; } = new ObservableCollection<MemberInfo>();
@@ -244,6 +250,8 @@ namespace PyMap
         }
 
         public BitmapSource SynchIcon => AppImages.Synch;
+        public BitmapSource ClearIcon => AppImages.Clear;
+        public BitmapSource FilterIcon => AppImages.Filter;
 
         public BitmapSource PrivateOverlayIcon => AppImages.PrivateOverlay;
     }
@@ -252,5 +260,7 @@ namespace PyMap
     {
         public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
         public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource Clear => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.clear.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.clear.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource Filter => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.filter.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.filter.png".LoadAsEmbeddedResourceImage());
     }
 }
