@@ -1,5 +1,5 @@
 # CodeMap (ex-PyMap)
-It is preferred that you installed the extension via [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OlegShilo.PyMap-2017).
+It is preferred that you installed the extension via [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OlegShilo.PyMap).
 This extension is built for VS2022. Though you can download VS2019 version from the [Releases page](https://github.com/oleg-shilo/PyMap.VSIX/releases).
 For older (pre VS2017) releases please visit [https://github.com/oleg-shilo/Retired-VSIX](https://github.com/oleg-shilo/Retired-VSIX).
 
