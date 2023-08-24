@@ -128,6 +128,8 @@
     <EmbeddedResource Include="Resources\icons\light\methodconstructor.png" />
     <EmbeddedResource Include="Resources\icons\light\property.png" />
     <EmbeddedResource Include="Resources\icons\dark\private.png" />
+    <EmbeddedResource Include="Resources\icons\dark\public.png" />
+    <EmbeddedResource Include="Resources\icons\light\public.png" />
     <Content Include="Resources\ToolWindow1Command.png" />
     <Content Include="Resources\ToolWindow1Package.ico" />
     <VSCTCompile Include="PyMapPackage.vsct">

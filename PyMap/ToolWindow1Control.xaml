@@ -96,6 +96,7 @@
             x:Name="codeMapList"
             Grid.Row="1"
             HorizontalContentAlignment="Stretch"
+            d:ItemsSource="{d:SampleData ItemCount=5}"
             Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
             ItemsSource="{Binding MemberList}"
@@ -111,15 +112,22 @@
                                     x:Name="temaplateRoot"
                                     VerticalAlignment="Center"
                                     Source="{Binding TypeIcon}"
-                                    Stretch="Fill" />
+                                    Stretch="Uniform" />
                                 <Image
                                     VerticalAlignment="Center"
                                     Source="{Binding AccessType}"
-                                    Stretch="Fill" />
+                                    Stretch="Uniform" />
                             </Grid>
-                            <TextBlock FontWeight="Normal" Text="{Binding Content}" />
-                            <TextBlock FontWeight="Bold" Text="{Binding Title}" />
                             <TextBlock
+                                VerticalAlignment="Center"
+                                FontWeight="Normal"
+                                Text="{Binding Content}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="{Binding Title}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
                                 FontStyle="Italic"
                                 FontWeight="Light"
                                 Foreground="Gray"
@@ -154,9 +162,9 @@
             Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -259,7 +267,7 @@
                     Grid.Row="3"
                     Grid.Column="2"
                     Click="SettingsChanged"
-                    Content="Auto-Synch"
+                    Content="Auto-Sync"
                     IsChecked="{Binding AutoSynch}"
                     ToolTip="Auto-synchronize map tree with the code view on the change of the caret position." />
             </Grid>

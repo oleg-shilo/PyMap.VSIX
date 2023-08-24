@@ -165,7 +165,6 @@ namespace PyMap
 
     public class MemberInfoImages
     {
-
         static public Dictionary<MemberType, BitmapSource> Dark = new Dictionary<MemberType, BitmapSource>
         {
             { MemberType.Interface,  "PyMap.Resources.icons.dark.interface.png".LoadAsEmbeddedResourceImage() },
@@ -212,8 +211,9 @@ namespace PyMap
         public MemberInfo[] Children;
 
         public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
+
         public BitmapSource AccessType => (IsPublic || MemberType == MemberType.Interface || MemberType == MemberType.Class)
-                                            ? null
+                                            ? AppImages.PublicOverlay
                                             : AppImages.PrivateOverlay;
 
         public override string ToString()

@@ -254,11 +254,13 @@ namespace PyMap
         public BitmapSource FilterIcon => AppImages.Filter;
 
         public BitmapSource PrivateOverlayIcon => AppImages.PrivateOverlay;
+        public BitmapSource PublicOverlayIcon => AppImages.PublicOverlay;
     }
 
     public class AppImages
     {
         public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource PublicOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage());
         public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
         public static BitmapSource Clear => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.clear.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.clear.png".LoadAsEmbeddedResourceImage());
         public static BitmapSource Filter => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.filter.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.filter.png".LoadAsEmbeddedResourceImage());
