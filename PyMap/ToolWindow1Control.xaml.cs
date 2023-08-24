@@ -1,4 +1,13 @@
-﻿using System;
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,15 +19,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.PlatformUI;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
-using EnvDTE;
-using EnvDTE80;
 
 namespace PyMap
 {
@@ -78,9 +78,15 @@ namespace PyMap
             ReadSettings();
 
             codeMapList.SelectionChanged += CodeMapList_SelectionChanged;
+            codeMapList.PreviewMouseDoubleClick += CodeMapList_MouseDoubleClick;
             parser.MapInvalidated += () => RefreshMap(force: true);
 
             initialized = true;
+        }
+
+        private void CodeMapList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            NavigateToSelectedMember();
         }
 
         int lastCaretPosition = -1;
