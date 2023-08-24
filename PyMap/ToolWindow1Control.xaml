@@ -103,9 +103,9 @@
             PreviewMouseWheel="codeMapList_PreviewMouseWheel">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border MinHeight="20">
+                    <Border MinHeight="0">
                         <!--  Background="{Binding Color, Converter={StaticResource KewordColorConverter}}">  -->
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="0,-3" Orientation="Horizontal">
                             <TextBlock Foreground="{x:Null}" Text="{Binding ContentType}" />
                             <Grid>
                                 <Image
@@ -119,6 +119,7 @@
                                     Stretch="Uniform" />
                             </Grid>
                             <TextBlock
+                                Margin="5,0,0,0"
                                 VerticalAlignment="Center"
                                 FontWeight="Normal"
                                 Text="{Binding Content}" />
