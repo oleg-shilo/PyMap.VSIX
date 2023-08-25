@@ -78,15 +78,26 @@ namespace PyMap
             ReadSettings();
 
             codeMapList.SelectionChanged += CodeMapList_SelectionChanged;
-            codeMapList.PreviewMouseDoubleClick += CodeMapList_MouseDoubleClick;
+            codeMapList.PreviewMouseLeftButtonUp += CodeMapList_PreviewMouseLeftButtonUp;
             parser.MapInvalidated += () => RefreshMap(force: true);
 
             initialized = true;
         }
 
-        private void CodeMapList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        object lastSelectedItem;
+
+        private void CodeMapList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            NavigateToSelectedMember();
+            if (lastSelectedItem == codeMapList.SelectedItem)
+            {
+                NavigateToSelectedMember();
+            }
+            else
+            {
+                // on selection change will handle it. It will also handle other selection
+                // triggers like keyboard strokes
+            }
+            lastSelectedItem = codeMapList.SelectedItem;
         }
 
         int lastCaretPosition = -1;
