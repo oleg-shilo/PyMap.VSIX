@@ -1,12 +1,12 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using PyMap;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using PyMap;
 
 class CSharpMapper
 {
@@ -45,6 +45,22 @@ class CSharpMapper
                                 .OrderBy(x => x.FullSpan.End)
                                 .ToArray();
 
+        var regions = root
+            .DescendantTrivia()
+            .Where(x => x.IsKind(SyntaxKind.RegionDirectiveTrivia))
+            .Select(x =>
+                new MemberInfo
+                {
+                    Line = x.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                    Column = x.GetLocation().GetLineSpan().StartLinePosition.Character,
+                    Content = "",
+                    MemberContext = "region: " + x.ToString().Replace("#region", "").Trim() + "",
+                    ContentType = "    ",
+                    IsPublic = true,
+                    Children = new List<MemberInfo>(),
+                    MemberType = MemberType.Region
+                }).ToArray();
+
         if (globalMethods.Any())
         {
             MemberInfo parent;
@@ -77,7 +93,7 @@ class CSharpMapper
                 });
             }
 
-            parent.Children = members.ToArray();
+            parent.Children = members.ToList();
         }
 
         //////////////////////////////////////////////
@@ -184,11 +200,33 @@ class CSharpMapper
                 }
             }
 
-            members = members.OrderBy(x => x.MemberType).ToList();
+            // members = members.OrderBy(x => x.MemberType).ToList();
 
             // members.ForEach(x => x.Line += lineOffset);
 
-            parent.Children = members.ToArray();
+            parent.Children = members.ToList();
+        }
+
+        foreach (var region in regions)
+        {
+            foreach (var type in map.ToArray())
+            {
+                if (region.Line < type.Line)
+                {
+                    var index = map.IndexOf(type);
+                    map.Insert(index, region);
+                    break;
+                }
+                else
+                {
+                    if (region.Line < type.Children.OrderBy(x => x.Line).LastOrDefault().Line)
+                    {
+                        var index = type.Children.TakeWhile(x => x.Line < region.Line).Count();
+                        type.Children.Insert(index, region);
+                        break;
+                    }
+                }
+            }
         }
 
         return map;

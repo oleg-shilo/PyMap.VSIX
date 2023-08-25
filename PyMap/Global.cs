@@ -172,7 +172,8 @@ namespace PyMap
             { MemberType.Field,      "PyMap.Resources.icons.dark.field.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Class,      "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Method,     "PyMap.Resources.icons.dark.method.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Constructor,"PyMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()}
+            { MemberType.Constructor,"PyMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Region,     "PyMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()}
         };
 
         static public Dictionary<MemberType, BitmapSource> Light = new Dictionary<MemberType, BitmapSource>
@@ -182,7 +183,8 @@ namespace PyMap
             { MemberType.Field,      "PyMap.Resources.icons.light.field.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Class,      "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Method,     "PyMap.Resources.icons.light.method.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Constructor,"PyMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()}
+            { MemberType.Constructor,"PyMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Region,     "PyMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()}
         };
     }
 
@@ -194,6 +196,7 @@ namespace PyMap
         Method,
         Property,
         Field,
+        Region,
     }
 
     public class MemberInfo
@@ -208,7 +211,7 @@ namespace PyMap
 
         public MemberType MemberType { set; get; }
 
-        public MemberInfo[] Children;
+        public List<MemberInfo> Children;
 
         public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 

@@ -16,10 +16,14 @@ namespace PyMap
     /// </summary>
     internal sealed class ToolWindow1Command
     {
+        #region TTT
+
         /// <summary>
         /// Command ID.
         /// </summary>
         public const int CommandId = 0x0100;
+
+        #endregion TTT
 
         public int CommandId1 { get; set; }
 

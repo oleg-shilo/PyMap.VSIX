@@ -156,7 +156,9 @@ namespace PyMap
                     var fileType = Path.GetExtension(file).ToLower();
                     var generateMap = mappers[fileType];
 
-                    foreach (var item in generateMap(file))
+                    var items = generateMap(file).OrderBy(x => x.Line);
+
+                    foreach (var item in items)
                     {
                         // Only Python parser is primitive because classes and functions do not encode relationships.
                         // just plain list. so ignore the class name filter
@@ -175,7 +177,7 @@ namespace PyMap
                                 return true;
                         }
 
-                        MemberInfo[] children = item.Children;
+                        var children = item.Children.OrderBy(x => x.Line).ToList();
 
                         if (item.MemberType == MemberType.Class || item.MemberType == MemberType.Interface)
                         {
@@ -184,13 +186,18 @@ namespace PyMap
                         }
                         else
                         {
-                            children = new[] { item };
+                            children = new List<MemberInfo> { item };
                         }
 
                         if (children?.Any() == true)
                         {
                             if (PublicMethods || PrivateMethods)
                             {
+                                // if (item.MemberType == MemberType.Region)
+                                // {
+                                //     MemberList.Add(item);
+                                // }
+
                                 var members = children.Where(x => x.MemberType == MemberType.Method || x.MemberType == MemberType.Constructor);
 
                                 if (!PublicMethods && PrivateMethods) members = members.Where(x => !x.IsPublic);
@@ -230,8 +237,10 @@ namespace PyMap
                         }
 
                         if (!SortMembers)
+                        {
+                            typeMembers.AddRange(children.Where(x => x.MemberType == MemberType.Region));
                             typeMembers = typeMembers.OrderBy(x => x.Line).ToList();
-
+                        }
                         foreach (var member in typeMembers)
                             MemberList.Add(member);
                         // typeMembers.ForEach(MemberList.Add);

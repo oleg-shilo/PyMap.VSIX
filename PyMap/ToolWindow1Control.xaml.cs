@@ -104,10 +104,11 @@ namespace PyMap
 
         void CheckIfThemeChanged()
         {
-            if (parser.AutoSynch)
-                CheckCurrentCaretPosition();
             try
             {
+                if (parser.AutoSynch)
+                    CheckCurrentCaretPosition();
+
                 var isCurrentThemeDark = !codeMapList.Background.IsBright();
                 if (ExtensionHost.IsDarkTheme != isCurrentThemeDark)
                 {
