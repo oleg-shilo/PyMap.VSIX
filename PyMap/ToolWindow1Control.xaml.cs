@@ -90,12 +90,13 @@ namespace PyMap
         {
             if (lastSelectedItem == codeMapList.SelectedItem)
             {
+                // go to the member stat line as you could ne in the middle of the large method
                 NavigateToSelectedMember();
             }
             else
             {
                 // on selection change will handle it. It will also handle other selection
-                // triggers like keyboard strokes
+                // changing triggers like keyboard strokes
             }
             lastSelectedItem = codeMapList.SelectedItem;
         }

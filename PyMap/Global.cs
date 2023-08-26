@@ -256,6 +256,22 @@ namespace PyMap
         }
     }
 
+    public sealed class IdeFontSizeToToolWindowsFontSizeConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // IDE default font size is strangely larger than what items presenters like Solution Explorer
+            // use at runtime (e.g. 12 vs 12.5).
+            // So let's make it smaller by 5%
+            if (value is double)
+                return ((double)value) * 0.95;
+            else
+                return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    }
+
     public class KewordColorConverter : IValueConverter
     {
         static SolidColorBrush lightBlue = new SolidColorBrush(Color.FromRgb(59, 138, 210));

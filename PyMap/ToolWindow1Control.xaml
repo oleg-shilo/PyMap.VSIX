@@ -10,13 +10,16 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+    FontFamily="{DynamicResource {x:Static vsshell:VsFonts.EnvironmentFontFamilyKey}}"
+    FontSize="{DynamicResource {x:Static vsshell:VsFonts.EnvironmentFontSizeKey}}"
     Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <local:KewordColorConverter x:Key="KewordColorConverter" />
+        <local:IdeFontSizeToToolWindowsFontSizeConverter x:Key="IdeFontSizeToToolWindowsFontSizeConverter" />
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
-    <Grid>
+    <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
@@ -105,7 +108,12 @@
                 <DataTemplate>
                     <Border MinHeight="0">
                         <!--  Background="{Binding Color, Converter={StaticResource KewordColorConverter}}">  -->
-                        <StackPanel Margin="0,-3" Orientation="Horizontal">
+                        <StackPanel Margin="0,-2" Orientation="Horizontal">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="FontSize" Value="{Binding ElementName=codeMapList, Path=FontSize, Converter={StaticResource IdeFontSizeToToolWindowsFontSizeConverter}}" />
+                                </Style>
+                            </StackPanel.Resources>
                             <TextBlock Foreground="{x:Null}" Text="{Binding ContentType}" />
                             <Grid>
                                 <Image
@@ -121,11 +129,10 @@
                             <TextBlock
                                 Margin="5,0,0,0"
                                 VerticalAlignment="Center"
-                                FontWeight="Normal"
                                 Text="{Binding Content}" />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontWeight="Bold"
+                                FontWeight="{DynamicResource {x:Static vsshell:VsFonts.EnvironmentBoldFontWeightKey}}"
                                 Text="{Binding Title}" />
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -134,7 +141,6 @@
                                 Foreground="Gray"
                                 Text="{Binding MemberContext}" />
                         </StackPanel>
-                        <!--  Foreground="{Binding ElementName=codeMapList, Path=Background, Converter={StaticResource KewordColorConverter}}"  -->
                     </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -156,6 +162,7 @@
             Grid.Row="2"
             HorizontalAlignment="Left"
             VerticalAlignment="Bottom"
+            Background="{Binding ElementName=codeMapList, Path=Background}"
             ExpandDirection="Up"
             FlowDirection="LeftToRight"
             IsExpanded="false"
@@ -182,7 +189,7 @@
                     </Style>
 
                     <Style TargetType="TextBlock">
-                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="FontWeight" Value="Medium" />
                         <Setter Property="Margin" Value="10,0,5,0" />
                         <Setter Property="VerticalAlignment" Value="Center" />
                         <Setter Property="HorizontalAlignment" Value="Right" />

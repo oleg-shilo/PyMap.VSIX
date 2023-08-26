@@ -177,7 +177,7 @@ namespace PyMap
                                 return true;
                         }
 
-                        var children = item.Children.OrderBy(x => x.Line).ToList();
+                        var children = item.Children?.OrderBy(x => x.Line).ToList();
 
                         if (item.MemberType == MemberType.Class || item.MemberType == MemberType.Interface)
                         {
