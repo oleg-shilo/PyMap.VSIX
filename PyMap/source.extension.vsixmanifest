@@ -2,14 +2,14 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
         <Identity Id="PyMap.Company.7e23d0e3-13e4-4af2-828a-433e71c2a335" Version="2.1.3.0" Language="en-US" Publisher="Oleg Shilo" />
-        <DisplayName>CodeMap (PyMap)</DisplayName>
-        <Description xml:space="preserve"> CodeMap is a code navigation (document outline) view for Python and C# source files.</Description>
+        <DisplayName>CodeMap</DisplayName>
+        <Description xml:space="preserve"> CodeMap (ex-PyMap) is a code navigation (document outline) view for Python and C# source files.</Description>
         <MoreInfo>https://github.com/oleg-shilo/PyMap.VSIX</MoreInfo>
         <License>licence.txt</License>
         <ReleaseNotes>changelog.txt</ReleaseNotes>
         <Icon>package.ico</Icon>
         <PreviewImage>Preview.png</PreviewImage>
-        <Tags>python, csharp, C#, editor, code, navigation, pymap</Tags>
+        <Tags>python, csharp, C#, editor, code, navigation, pymap, codemap</Tags>
         <Preview>true</Preview>
     </Metadata>
     <Installation>
