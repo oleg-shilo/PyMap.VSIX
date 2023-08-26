@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using System;
@@ -18,6 +19,8 @@ using System.Windows.Controls;
 // using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+
+// using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace PyMap
@@ -258,6 +261,7 @@ namespace PyMap
                     {
                         docFile = doc.FullName;
                         RefreshMap(true);
+                        lastSelectedItem = codeMapList.SelectedItem;
                     }
                 }
             }
@@ -282,6 +286,7 @@ namespace PyMap
                     {
                         IWpfTextView textView = Global.GetTextView();
                         textView.MoveCaretToLine(info.Line);
+                        textView.SelectLine(info.Line);
                     }
                 }
             }
@@ -393,6 +398,7 @@ namespace PyMap
                     skipNextSelectionChange = true;
                     codeMapList.SelectedItem = correspondingMember;
                     codeMapList.ScrollIntoView(codeMapList.SelectedItem);
+                    lastSelectedItem = codeMapList.SelectedItem;
                 }
             }
             catch { }

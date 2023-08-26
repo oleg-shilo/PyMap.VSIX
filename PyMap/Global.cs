@@ -65,6 +65,17 @@ namespace PyMap
             obj.VisualElement.Focus();
         }
 
+        public static void SelectLine(this IWpfTextView obj, int line)
+        {
+            var snapshotLine = obj.GetLine(line);
+            var start = snapshotLine.Start.Position;
+            var end = snapshotLine.End.Position;
+
+            var newSpan = new SnapshotSpan(snapshotLine.Start, end - start);
+
+            obj.Selection.Select(newSpan, false);
+        }
+
         public static void MoveCaretTo(this IWpfTextView obj, int position)
         {
             var point = new SnapshotPoint(obj.TextSnapshot, position);

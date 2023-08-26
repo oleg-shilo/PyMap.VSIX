@@ -1,4 +1,5 @@
-Release v2.1.3.0
+Release v2.1.4.0
+- Added selection of the map item start line in the text editor
 - Issue #10:  Wish to RE-Click or Double-Click item in list to get to the top of method or property
 - Issue #9:  Display Regions somehow
 - Issue #8: GUI Layout issue
