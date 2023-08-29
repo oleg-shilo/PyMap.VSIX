@@ -55,7 +55,7 @@ class CSharpMapper
                     Column = x.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = "",
                     MemberContext = "region: " + x.ToString().Replace("#region", "").Trim() + "",
-                    ContentType = "    ",
+                    ContentType = "",
                     IsPublic = true,
                     Children = new List<MemberInfo>(),
                     MemberType = MemberType.Region
@@ -69,6 +69,7 @@ class CSharpMapper
                 Line = 1,
                 Column = 1,
                 Title = "<global>",
+                Children = new List<MemberInfo>(),
                 MemberType = MemberType.Class,
                 MemberContext = ""
             });
@@ -88,6 +89,7 @@ class CSharpMapper
                     Content = method.Identifier.Text,
                     MemberContext = " (" + paramList + ")",
                     ContentType = "    ",
+                    Children = new List<MemberInfo>(),
                     IsPublic = true,
                     MemberType = MemberType.Method
                 });
@@ -121,6 +123,7 @@ class CSharpMapper
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
                 MemberType = MemberType.Class,
+                Children = new List<MemberInfo>(),
 
                 MemberContext = ": " + type.Kind().ToString().Replace("Declaration", "").ToLower()
             });
@@ -149,6 +152,7 @@ class CSharpMapper
                         Content = method.Identifier.Text,
                         MemberContext = " (" + paramList + ")",
                         ContentType = "    ",
+                        Children = new List<MemberInfo>(),
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         MemberType = MemberType.Method
                     });
@@ -167,6 +171,7 @@ class CSharpMapper
                         Content = method.Identifier.Text,
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         ContentType = "    ",
+                        Children = new List<MemberInfo>(),
                         MemberContext = " (" + paramList + ")",
                         MemberType = MemberType.Constructor
                     });
@@ -209,17 +214,20 @@ class CSharpMapper
 
         foreach (var region in regions)
         {
+            var inserted = false;
+
             foreach (var type in map.ToArray())
             {
                 if (region.Line < type.Line)
                 {
                     var index = map.IndexOf(type);
                     map.Insert(index, region);
+                    inserted = true;
                     break;
                 }
                 else
                 {
-                    if (region.Line < type.Children.OrderBy(x => x.Line).LastOrDefault().Line)
+                    if (type.Children.Any() && region.Line < type.Children.OrderBy(x => x.Line).LastOrDefault().Line)
                     {
                         var index = type.Children.TakeWhile(x => x.Line < region.Line).Count();
                         type.Children.Insert(index, region);
@@ -227,6 +235,8 @@ class CSharpMapper
                     }
                 }
             }
+            if (!inserted)
+                map.Add(region);
         }
 
         return map;

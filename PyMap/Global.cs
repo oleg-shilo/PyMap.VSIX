@@ -222,7 +222,7 @@ namespace PyMap
 
         public MemberType MemberType { set; get; }
 
-        public List<MemberInfo> Children;
+        public List<MemberInfo> Children = new List<MemberInfo>();
 
         public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 
