@@ -1,3 +1,9 @@
+Release v2.1.6.0
+- Issue #12: Regions are displayed twice in the list
+
+Release v2.1.5.0
+- Issue #11: Exceptions thrown with regions in certain layouts
+
 Release v2.1.4.0
 - Added selection of the map item start line in the text editor
 - Issue #10:  Wish to RE-Click or Double-Click item in list to get to the top of method or property

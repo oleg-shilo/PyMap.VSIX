@@ -231,6 +231,7 @@ class CSharpMapper
                     {
                         var index = type.Children.TakeWhile(x => x.Line < region.Line).Count();
                         type.Children.Insert(index, region);
+                        inserted = true;
                         break;
                     }
                 }
