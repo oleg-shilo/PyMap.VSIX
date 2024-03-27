@@ -1,16 +1,16 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using PyMap;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using PyMap;
 
 class CSharpMapper
 {
-    public static IEnumerable<MemberInfo> Generate(string file)
+    public static IEnumerable<MemberInfo> Generate(string file, bool showMethodParams)
     {
         var map = new List<MemberInfo>();
 
@@ -79,8 +79,9 @@ class CSharpMapper
             {
                 var method = (member.Statement as LocalFunctionStatementSyntax);
 
-                //var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
-                var paramList = method.ParameterList.Parameters.ToString().Deflate();
+                var paramList = showMethodParams ?
+                    method.ParameterList.Parameters.ToString().Deflate() :
+                    "...";
 
                 members.Add(new MemberInfo
                 {
@@ -142,8 +143,9 @@ class CSharpMapper
                 {
                     var method = (member as MethodDeclarationSyntax);
 
-                    //var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
-                    var paramList = method.ParameterList.Parameters.ToString().Deflate();
+                    var paramList = showMethodParams ?
+                        method.ParameterList.Parameters.ToString().Deflate() :
+                        "...";
 
                     members.Add(new MemberInfo
                     {
@@ -161,8 +163,9 @@ class CSharpMapper
                 {
                     var method = (member as ConstructorDeclarationSyntax);
 
-                    // var paramList = string.Join(", ", method.ParameterList.Parameters.Select(x => x.ToString().Split(' ').LastOrDefault()));
-                    var paramList = method.ParameterList.Parameters.ToString().Deflate();
+                    var paramList = showMethodParams ?
+                        method.ParameterList.Parameters.ToString().Deflate() :
+                        "...";
 
                     members.Add(new MemberInfo
                     {

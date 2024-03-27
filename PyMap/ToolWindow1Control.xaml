@@ -166,8 +166,7 @@
             ExpandDirection="Up"
             FlowDirection="LeftToRight"
             IsExpanded="false"
-            ToolTip="Adjust mapping settings"
-            Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}">
+            ToolTip="Adjust mapping settings">
             <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto" />
@@ -175,6 +174,7 @@
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
@@ -200,7 +200,8 @@
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
-                    Text="Methods:" />
+                    Text="Methods:"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="PublicMethods"
@@ -208,7 +209,8 @@
                     Grid.Column="1"
                     Click="SettingsChanged"
                     Content="Public"
-                    IsChecked="{Binding PublicMethods}" />
+                    IsChecked="{Binding PublicMethods}"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="PrivateMethods"
@@ -216,12 +218,14 @@
                     Grid.Column="2"
                     Click="SettingsChanged"
                     Content="Private"
-                    IsChecked="{Binding PrivateMethods}" />
+                    IsChecked="{Binding PrivateMethods}"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <!--  ##########################################################  -->
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
-                    Text="Properties:" />
+                    Text="Properties:"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="PublicProperties"
@@ -229,7 +233,8 @@
                     Grid.Column="1"
                     Click="SettingsChanged"
                     Content="Public"
-                    IsChecked="{Binding PublicProperties}" />
+                    IsChecked="{Binding PublicProperties}"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="PrivateProperties"
@@ -237,14 +242,16 @@
                     Grid.Column="2"
                     Click="SettingsChanged"
                     Content="Private"
-                    IsChecked="{Binding PrivateProperties}" />
+                    IsChecked="{Binding PrivateProperties}"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <!--  ##########################################################  -->
 
                 <TextBlock
                     Grid.Row="2"
                     Grid.Column="0"
-                    Text="Fields:" />
+                    Text="Fields:"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="PublicFields"
@@ -252,7 +259,8 @@
                     Grid.Column="1"
                     Click="SettingsChanged"
                     Content="Public"
-                    IsChecked="{Binding PublicFields}" />
+                    IsChecked="{Binding PublicFields}"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="PrivateFields"
@@ -260,7 +268,8 @@
                     Grid.Column="2"
                     Click="SettingsChanged"
                     Content="Private"
-                    IsChecked="{Binding PrivateFields}" />
+                    IsChecked="{Binding PrivateFields}"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
                     x:Name="SortMembers"
@@ -268,7 +277,8 @@
                     Grid.Column="1"
                     Click="SettingsChanged"
                     Content="Sort"
-                    IsChecked="{Binding SortMembers}" />
+                    IsChecked="{Binding SortMembers}"
+                    IsEnabled="True" />
 
                 <CheckBox
                     x:Name="AutoSynch"
@@ -277,7 +287,18 @@
                     Click="SettingsChanged"
                     Content="Auto-Sync"
                     IsChecked="{Binding AutoSynch}"
+                    IsEnabled="True"
                     ToolTip="Auto-synchronize map tree with the code view on the change of the caret position." />
+                <CheckBox
+                    x:Name="ShowMethodSignatures"
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Click="SettingsChanged"
+                    Content="Method parameters"
+                    IsChecked="{Binding ShowMethodSignatures}"
+                    IsEnabled="True"
+                    ToolTip="Show method parameters in the signature." />
             </Grid>
         </Expander>
     </Grid>

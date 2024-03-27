@@ -47,6 +47,12 @@ namespace PyMap
         string className;
         string memberName;
         bool autoSynch;
+        bool showMethodSignatures = true;
+
+        public bool ShowMethodSignatures
+        {
+            get => showMethodSignatures; set { showMethodSignatures = value; OnPropertyChanged(nameof(ShowMethodSignatures)); }
+        }
 
         public bool AutoSynch
         {
@@ -137,13 +143,15 @@ namespace PyMap
             return mappers.ContainsKey(fileType);
         }
 
-        Dictionary<string, Func<string, IEnumerable<MemberInfo>>> mappers = new Dictionary<string, Func<string, IEnumerable<MemberInfo>>>()
+        Dictionary<string, Func<string, bool, IEnumerable<MemberInfo>>> mappers = new Dictionary<string, Func<string, bool, IEnumerable<MemberInfo>>>();
+
+        public SyntaxParser()
         {
-            { ".cs", CSharpMapper.Generate },
-            { ".razor", CSharpMapper.Generate },
-            { ".py", PythonMapper.Generate },
-            { ".pyw", PythonMapper.Generate },
-        };
+            mappers.Add(".cs", CSharpMapper.Generate);
+            mappers.Add(".razor", CSharpMapper.Generate);
+            mappers.Add(".py", PythonMapper.Generate);
+            mappers.Add(".pyw", PythonMapper.Generate);
+        }
 
         public void GenerateMap(string file)
         {
@@ -156,7 +164,7 @@ namespace PyMap
                     var fileType = Path.GetExtension(file).ToLower();
                     var generateMap = mappers[fileType];
 
-                    var items = generateMap(file).OrderBy(x => x.Line);
+                    var items = generateMap(file, ShowMethodSignatures).OrderBy(x => x.Line);
 
                     foreach (var item in items)
                     {

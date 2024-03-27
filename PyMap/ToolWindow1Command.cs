@@ -1,12 +1,12 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using System;
+﻿using System;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using EnvDTE;
+using EnvDTE80;
 using Task = System.Threading.Tasks.Task;
 
 namespace PyMap
@@ -16,14 +16,10 @@ namespace PyMap
     /// </summary>
     internal sealed class ToolWindow1Command
     {
-        #region TTT
-
         /// <summary>
         /// Command ID.
         /// </summary>
         public const int CommandId = 0x0100;
-
-        #endregion TTT
 
         public int CommandId1 { get; set; }
 

@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using PyMap;
 
 class PythonMapper
 {
-    public static IEnumerable<MemberInfo> Generate(string file)
+    public static IEnumerable<MemberInfo> Generate(string file, bool showMethodParams)
     {
         var map = new List<MemberInfo>();
         var code = File.ReadAllLines(file);
@@ -43,7 +44,9 @@ class PythonMapper
                 {
                     info.MemberContext = "";
                     info.MemberType = MemberType.Method;
-                    info.Content = line.Substring("def ".Length).TrimEnd().TrimEnd(':');
+                    info.Content = showMethodParams ?
+                        line.Substring("def ".Length).TrimEnd().TrimEnd(':') :
+                        line.Substring("def ".Length).Split('(').First().TrimEnd() + "(...)";
                 }
 
                 map.Add(info);

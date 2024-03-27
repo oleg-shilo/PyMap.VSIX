@@ -1,14 +1,4 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.PlatformUI;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -22,6 +12,16 @@ using System.Windows.Media;
 
 // using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using EnvDTE;
+using EnvDTE80;
 
 namespace PyMap
 {
@@ -205,7 +205,8 @@ namespace PyMap
                    $"PrivateProperties:{parser.PrivateProperties}\n" +
                    $"PrivateFields:{parser.PrivateFields}\n" +
                    $"SortMembers:{parser.SortMembers}\n" +
-                   $"AutoSynch:{parser.AutoSynch}";
+                   $"AutoSynch:{parser.AutoSynch}\n" +
+                   $"ShowMethodSignatures:{parser.ShowMethodSignatures}";
         }
 
         void ApplySettings(string settings)
@@ -228,6 +229,7 @@ namespace PyMap
                 else if (item.Key == "PrivateFields") parser.PrivateFields = bool.Parse(item.Value);
                 else if (item.Key == "PrivateMethods") parser.PrivateMethods = bool.Parse(item.Value);
                 else if (item.Key == "SortMembers") parser.SortMembers = bool.Parse(item.Value);
+                else if (item.Key == "ShowMethodSignatures") parser.ShowMethodSignatures = bool.Parse(item.Value);
                 else if (item.Key == "AutoSynch") parser.AutoSynch = bool.Parse(item.Value);
                 else if (item.Key == "FontSize" && double.TryParse(item.Value, out double new_size)) codeMapList.FontSize = new_size;
             }
