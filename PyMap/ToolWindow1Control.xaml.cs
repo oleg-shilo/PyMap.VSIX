@@ -144,6 +144,13 @@ namespace PyMap
                 skipNextSelectionChange = false;
             else
                 NavigateToSelectedMember();
+
+            // if the selection is changed, the scroll position should be changed to the default position.
+            // This is to avoid jumps to most right when the member signature is too wide.
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                codeMapList.FindChild<ScrollViewer>()?.ScrollToHorizontalOffset(0);
+            }));
         }
 
         void SettingsChanged(object sender, RoutedEventArgs e)
@@ -411,5 +418,57 @@ namespace PyMap
             parser.ClassName = "";
             parser.MemberName = "";
         }
+    }
+}
+
+static class UIHelper
+{
+    /// <summary>
+    /// Finds a Child of a given item in the visual tree.
+    /// </summary>
+    /// <param name="parent">A direct parent of the queried item.</param>
+    /// <typeparam name="T">The type of the queried item.</typeparam>
+    /// <param name="childName">x:Name or Name of child. </param>
+    /// <returns>The first parent item that matches the submitted type parameter.
+    /// If not matching item can be found,
+    /// a null parent is being returned.</returns>
+    public static T FindChild<T>(this DependencyObject parent, string childName = null)
+        where T : DependencyObject
+    {
+        if (parent == null)
+            return null;
+
+        T foundChild = null;
+
+        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childrenCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            T childType = child as T;
+            if (childType == null)
+            {
+                foundChild = FindChild<T>(child, childName);
+
+                if (foundChild != null)
+                    break;
+            }
+            else if (!string.IsNullOrEmpty(childName))
+            {
+                var frameworkElement = child as FrameworkElement;
+                if (frameworkElement != null && frameworkElement.Name == childName)
+                {
+                    foundChild = (T)child;
+                    break;
+                }
+            }
+            else
+            {
+                foundChild = (T)child;
+                break;
+            }
+        }
+
+        return foundChild;
     }
 }
