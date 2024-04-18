@@ -10,6 +10,16 @@ namespace PyMap
     using System.Threading;
     using System.Windows.Media.Imaging;
 
+    public struct MyStruct
+    {
+        public int X;
+        public int Y;
+    }
+
+    public interface MyInterface
+    {
+    }
+
     class SyntaxParser : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -37,6 +47,10 @@ namespace PyMap
 
         public ObservableCollection<MemberInfo> MemberList { get; set; } = new ObservableCollection<MemberInfo>();
 
+        bool interfaces = true;
+        bool classes = true;
+        bool structs = true;
+        bool others = true;
         bool privateFields = true;
         bool publicFields = true;
         bool privateProperties = true;
@@ -102,6 +116,26 @@ namespace PyMap
         public bool PrivateFields
         {
             get => privateFields; set { privateFields = value; OnPropertyChanged(nameof(PrivateFields)); }
+        }
+
+        public bool Structs
+        {
+            get => structs; set { structs = value; OnPropertyChanged(nameof(Structs)); }
+        }
+
+        public bool Others
+        {
+            get => others; set { others = value; OnPropertyChanged(nameof(Others)); }
+        }
+
+        public bool Classes
+        {
+            get => classes; set { classes = value; OnPropertyChanged(nameof(Classes)); }
+        }
+
+        public bool Interfaces
+        {
+            get => interfaces; set { interfaces = value; OnPropertyChanged(nameof(Interfaces)); }
         }
 
         bool isCSharp = true;
@@ -187,7 +221,32 @@ namespace PyMap
 
                         var children = item.Children?.OrderBy(x => x.Line).ToList();
 
-                        if (item.MemberType == MemberType.Class || item.MemberType == MemberType.Interface)
+                        if (item.MemberType == MemberType.Class)
+                        {
+                            if ((item.IsPublic && !Classes) ||
+                                (!item.IsPublic && !Interfaces))
+                                continue;
+                        }
+
+                        if (item.MemberType == MemberType.Class && !Classes)
+                            continue;
+
+                        if (item.MemberType == MemberType.Interface && !Interfaces)
+                            continue;
+
+                        if (item.MemberType == MemberType.Struct && !Structs)
+                            continue;
+
+                        if ((item.MemberType != MemberType.Class &&
+                             item.MemberType != MemberType.Interface &&
+                             item.MemberType != MemberType.Struct)
+                             && !Others)
+                            continue;
+
+                        if (item.MemberType == MemberType.Class
+                            || item.MemberType == MemberType.Interface
+                            || item.MemberType == MemberType.Type
+                            || item.MemberType == MemberType.Struct)
                         {
                             MemberList.Add(item);
                             children = item.Children;
@@ -249,9 +308,9 @@ namespace PyMap
                             typeMembers.AddRange(children.Where(x => x.MemberType == MemberType.Region));
                             typeMembers = typeMembers.OrderBy(x => x.Line).ToList();
                         }
+
                         foreach (var member in typeMembers)
                             MemberList.Add(member);
-                        // typeMembers.ForEach(MemberList.Add);
                     }
 
                     ErrorMessage = null;

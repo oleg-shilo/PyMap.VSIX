@@ -111,7 +111,7 @@ class CSharpMapper
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
                 MemberContext = ": enum",
-                MemberType = MemberType.Class
+                MemberType = MemberType.Type
             });
         }
 
@@ -123,16 +123,25 @@ class CSharpMapper
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
-                MemberType = MemberType.Class,
+                MemberType = MemberType.Type,
                 Children = new List<MemberInfo>(),
 
                 MemberContext = ": " + type.Kind().ToString().Replace("Declaration", "").ToLower()
             });
 
-            if (parent.ContentType == "interface")
+            if (parent.MemberContext == ": class")
             {
-                parent.MemberContext = ": interface";
+                parent.MemberType = MemberType.Class;
+            }
+
+            if (parent.MemberContext == ": interface")
+            {
                 parent.MemberType = MemberType.Interface;
+            }
+
+            if (parent.MemberContext == ": struct")
+            {
+                parent.MemberType = MemberType.Struct;
             }
 
             List<MemberInfo> members = new List<MemberInfo>();

@@ -1,11 +1,3 @@
-using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Package;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,6 +10,14 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Package;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using EnvDTE;
+using EnvDTE80;
 
 // using PyMap.Resources.icons.dark;
 
@@ -182,6 +182,8 @@ namespace PyMap
             { MemberType.Property,   "PyMap.Resources.icons.dark.property.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Field,      "PyMap.Resources.icons.dark.field.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Class,      "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Struct,     "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Type,       "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Method,     "PyMap.Resources.icons.dark.method.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Constructor,"PyMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Region,     "PyMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()}
@@ -193,6 +195,8 @@ namespace PyMap
             { MemberType.Property,   "PyMap.Resources.icons.light.property.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Field,      "PyMap.Resources.icons.light.field.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Class,      "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Struct,     "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Type,       "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Method,     "PyMap.Resources.icons.light.method.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Constructor,"PyMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Region,     "PyMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()}
@@ -203,6 +207,8 @@ namespace PyMap
     {
         Interface,
         Class,
+        Struct,
+        Type,
         Constructor,
         Method,
         Property,
@@ -227,8 +233,8 @@ namespace PyMap
         public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 
         public BitmapSource AccessType => (IsPublic || MemberType == MemberType.Interface || MemberType == MemberType.Class)
-                                            ? AppImages.PublicOverlay
-                                            : AppImages.PrivateOverlay;
+                                           ? AppImages.PublicOverlay
+                                             : AppImages.PrivateOverlay;
 
         public override string ToString()
         {
