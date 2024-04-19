@@ -231,6 +231,8 @@ namespace PyMap
                 {
                     if (!File.Exists(x))
                         Items.Remove(x);
+                    else if (!Items[x].Any())
+                        Items.Remove(x);
                 });
         }
 
@@ -253,14 +255,29 @@ namespace PyMap
             return null;
         }
 
-        public static void Load(string json)
+        static string bookmarksFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".vs", "codemap.vs.json");
+
+        public static void Load()
         {
-            // Items = JObject.Parse(json).ToObject<Dictionary<string, Dictionary<string, string>>>();
+            try
+            {
+                if (File.Exists(bookmarksFile))
+                {
+                    var json = File.ReadAllText(bookmarksFile);
+                    Items = JObject.Parse(json).ToObject<Dictionary<string, Dictionary<string, string>>>();
+                }
+            }
+            catch { }
         }
 
         public static void Save()
         {
-            // Items = JObject.Parse(json).ToObject<Dictionary<string, Dictionary<string, string>>>();
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(bookmarksFile));
+                File.WriteAllText(bookmarksFile, JObject.FromObject(Items).ToString());
+            }
+            catch { }
         }
     }
 
@@ -341,7 +358,7 @@ namespace PyMap
         {
             if (!(value is string))
                 return null;
-            return string.IsNullOrEmpty((string)value) ? Visibility.Collapsed : Visibility.Visible;
+            return string.IsNullOrWhiteSpace((string)value) ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();

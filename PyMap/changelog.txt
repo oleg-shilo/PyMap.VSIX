@@ -1,3 +1,8 @@
+Release v2.2.0.0
+- Issue #16: Local methods, colored bookmarks, filter for structs 
+  Implemented tree map bookmarks
+  Implemented filtering by type (class/interface/structs and other types)
+
 Release v2.1.6.0
 - Issue #12: Regions are displayed twice in the list
 

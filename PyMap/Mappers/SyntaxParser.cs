@@ -324,6 +324,7 @@ namespace PyMap
                     }
 
                     ErrorMessage = null;
+
                     return;
                 }
                 catch (Exception e)

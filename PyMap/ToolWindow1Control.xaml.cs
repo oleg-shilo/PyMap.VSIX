@@ -446,7 +446,10 @@ namespace PyMap
                         info.ColorContext = bookmarkName;
 
                     if (!string.IsNullOrEmpty(docFile) && File.Exists(docFile))
+                    {
                         BookmarksStore.Store(docFile, info.Id, info.ColorContext);
+                        _ = Task.Run(BookmarksStore.Save);
+                    }
                 }
             }
             catch

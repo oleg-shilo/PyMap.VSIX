@@ -79,6 +79,8 @@ namespace PyMap
             // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
+            _ = Task.Run(BookmarksStore.Load);
+
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             Instance = new ToolWindow1Command(package, commandService);
         }
