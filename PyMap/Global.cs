@@ -10,6 +10,7 @@ using System.Resources;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.VisualStudio.Editor;
@@ -219,6 +220,50 @@ namespace PyMap
         Region,
     }
 
+    static class BookmarksStore
+    {
+        static Dictionary<string, Dictionary<string, string>> Items = new Dictionary<string, Dictionary<string, string>>();
+
+        public static void Purge()
+        {
+            Items.Keys.ToList()
+                .ForEach(x =>
+                {
+                    if (!File.Exists(x))
+                        Items.Remove(x);
+                });
+        }
+
+        public static void Store(string documentName, string location, string bookmarkName)
+        {
+            if (!Items.ContainsKey(documentName))
+                Items[documentName] = new Dictionary<string, string>();
+
+            if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
+                Items[documentName].Remove(location);
+            else
+                Items[documentName][location] = bookmarkName;
+        }
+
+        public static string Read(string documentName, string location)
+        {
+            if (Items.ContainsKey(documentName))
+                if (Items[documentName].ContainsKey(location))
+                    return Items[documentName][location];
+            return null;
+        }
+
+        public static void Load(string json)
+        {
+            // Items = JObject.Parse(json).ToObject<Dictionary<string, Dictionary<string, string>>>();
+        }
+
+        public static void Save()
+        {
+            // Items = JObject.Parse(json).ToObject<Dictionary<string, Dictionary<string, string>>>();
+        }
+    }
+
     public class MemberInfo : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -228,6 +273,9 @@ namespace PyMap
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public string Parent = "";
+
+        public string Id => $"{Parent}.{Content}.{MemberContext}.{Title}";
         public int Line { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";

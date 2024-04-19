@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 using System.Windows.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -118,6 +119,7 @@ class CSharpMapper
         foreach (TypeDeclarationSyntax type in types)
         {
             MemberInfo parent;
+
             map.Add(parent = new MemberInfo
             {
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
@@ -148,6 +150,8 @@ class CSharpMapper
 
             foreach (var member in type.ChildNodes().OfType<MemberDeclarationSyntax>())
             {
+                MemberInfo info = null;
+
                 if (member is MethodDeclarationSyntax)
                 {
                     var method = (member as MethodDeclarationSyntax);
@@ -156,8 +160,9 @@ class CSharpMapper
                         method.ParameterList.Parameters.ToString().Deflate() :
                         "...";
 
-                    members.Add(new MemberInfo
+                    info = new MemberInfo
                     {
+                        Parent = parent.Title,
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
@@ -166,7 +171,7 @@ class CSharpMapper
                         Children = new List<MemberInfo>(),
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         MemberType = MemberType.Method
-                    });
+                    };
                 }
                 else if (member is ConstructorDeclarationSyntax)
                 {
@@ -176,7 +181,7 @@ class CSharpMapper
                         method.ParameterList.Parameters.ToString().Deflate() :
                         "...";
 
-                    members.Add(new MemberInfo
+                    info = new MemberInfo
                     {
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -186,12 +191,12 @@ class CSharpMapper
                         Children = new List<MemberInfo>(),
                         MemberContext = " (" + paramList + ")",
                         MemberType = MemberType.Constructor
-                    });
+                    };
                 }
                 else if (member is PropertyDeclarationSyntax)
                 {
                     var prop = (member as PropertyDeclarationSyntax);
-                    members.Add(new MemberInfo
+                    info = new MemberInfo
                     {
                         Line = prop.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = prop.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -199,13 +204,13 @@ class CSharpMapper
                         ContentType = "    ",
                         IsPublic = prop.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         MemberType = MemberType.Property
-                    });
+                    };
                 }
                 else if (member is FieldDeclarationSyntax)
                 {
                     var field = (member as FieldDeclarationSyntax);
 
-                    members.Add(new MemberInfo
+                    info = new MemberInfo
                     {
                         Line = field.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = field.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -213,7 +218,13 @@ class CSharpMapper
                         ContentType = "    ",
                         IsPublic = field.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         MemberType = MemberType.Field
-                    });
+                    };
+                }
+
+                if (info != null)
+                {
+                    info.Parent = parent.Title;
+                    members.Add(info);
                 }
             }
 

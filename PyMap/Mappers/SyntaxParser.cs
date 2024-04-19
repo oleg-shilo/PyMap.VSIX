@@ -200,8 +200,12 @@ namespace PyMap
 
                     var items = generateMap(file, ShowMethodSignatures).OrderBy(x => x.Line);
 
-                    foreach (var item in items)
+                    foreach (MemberInfo item in items)
                     {
+                        var bookmark = BookmarksStore.Read(file, item.Id);
+                        if (bookmark != null)
+                            item.ColorContext = bookmark;
+
                         // Only Python parser is primitive because classes and functions do not encode relationships.
                         // just plain list. so ignore the class name filter
                         if (!IsPython)
@@ -310,7 +314,13 @@ namespace PyMap
                         }
 
                         foreach (var member in typeMembers)
+                        {
+                            bookmark = BookmarksStore.Read(file, member.Id);
+                            if (bookmark != null)
+                                member.ColorContext = bookmark;
+
                             MemberList.Add(member);
+                        }
                     }
 
                     ErrorMessage = null;
