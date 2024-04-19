@@ -20,6 +20,26 @@
         <local:TextLengthToVisibilityConverter x:Key="TextLengthToVisibilityConverter" />
         <local:IdeFontSizeToToolWindowsFontSizeConverter x:Key="IdeFontSizeToToolWindowsFontSizeConverter" />
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <!--<Style TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="LightBlue" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>-->
     </UserControl.Resources>
     <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
         <Grid.RowDefinitions>
@@ -109,7 +129,10 @@
 
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border MinHeight="0">
+                    <Border
+                        MinHeight="0"
+                        HorizontalAlignment="Stretch"
+                        Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}">
                         <Border.ContextMenu>
                             <ContextMenu>
                                 <MenuItem
@@ -189,7 +212,6 @@
                                 Margin="5,0,5,0"
                                 Padding="2,0,3,0"
                                 VerticalAlignment="Center"
-                                Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
                                 Text="{Binding Content}"
                                 Visibility="{Binding Content, Converter={StaticResource TextLengthToVisibilityConverter}}">
                                 <TextBlock.Foreground>
@@ -200,10 +222,10 @@
                                 </TextBlock.Foreground>
                             </TextBlock>
 
+                            <!--  Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"  -->
                             <TextBlock
                                 Padding="2,0,3,0"
                                 VerticalAlignment="Center"
-                                Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
                                 FontWeight="{DynamicResource {x:Static vsshell:VsFonts.EnvironmentBoldFontWeightKey}}"
                                 Text="{Binding Title}"
                                 Visibility="{Binding Title, Converter={StaticResource TextLengthToVisibilityConverter}}">
