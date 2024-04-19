@@ -25,7 +25,7 @@ using Newtonsoft.Json.Linq;
 
 // using PyMap.Resources.icons.dark;
 
-namespace PyMap
+namespace CodeMap
 {
     static class Global
     {

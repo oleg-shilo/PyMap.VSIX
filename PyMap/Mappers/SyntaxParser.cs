@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace PyMap
+namespace CodeMap
 {
     using System.ComponentModel;
     using System.IO;

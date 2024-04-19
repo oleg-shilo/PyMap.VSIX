@@ -7,7 +7,7 @@ using System.Windows.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using PyMap;
+using CodeMap;
 
 class CSharpMapper
 {

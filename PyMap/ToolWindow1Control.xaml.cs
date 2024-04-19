@@ -23,7 +23,7 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using EnvDTE;
 using EnvDTE80;
 
-namespace PyMap
+namespace CodeMap
 {
     static class ExtensionHost
     {
