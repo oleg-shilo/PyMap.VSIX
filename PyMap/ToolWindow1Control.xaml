@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:PyMap"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-    Name="MyToolWindow"
+    x:Name="MyToolWindow"
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
@@ -15,7 +15,9 @@
     Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <local:KewordColorConverter x:Key="KewordColorConverter" />
+        <local:BookmarkToBackgroundConverter x:Key="BookmarkToBackgroundConverter" />
+        <local:BookmarkToForegroundConverter x:Key="BookmarkToForegroundConverter" />
+        <local:TextLengthToVisibilityConverter x:Key="TextLengthToVisibilityConverter" />
         <local:IdeFontSizeToToolWindowsFontSizeConverter x:Key="IdeFontSizeToToolWindowsFontSizeConverter" />
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
@@ -104,11 +106,64 @@
             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
             ItemsSource="{Binding MemberList}"
             PreviewMouseWheel="codeMapList_PreviewMouseWheel">
+
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Border MinHeight="0">
-                        <!--  Background="{Binding Color, Converter={StaticResource KewordColorConverter}}">  -->
+                        <Border.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem
+                                    Click="MenuItem_Click"
+                                    Header="Bookmark 1"
+                                    Tag="bookmark1">
+                                    <MenuItem.Icon>
+                                        <Rectangle
+                                            Width="16"
+                                            Height="16"
+                                            Fill="#FFF5CC84" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    Click="MenuItem_Click"
+                                    Header="Bookmark 2"
+                                    Tag="bookmark2">
+                                    <MenuItem.Icon>
+                                        <Rectangle
+                                            Width="16"
+                                            Height="16"
+                                            Fill="LightBlue" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    Click="MenuItem_Click"
+                                    Header="Bookmark 3"
+                                    Tag="bookmark3">
+                                    <MenuItem.Icon>
+                                        <Rectangle
+                                            Width="16"
+                                            Height="16"
+                                            Fill="YellowGreen" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    Click="MenuItem_Click"
+                                    Header="Bookmark 4"
+                                    Tag="bookmark4">
+                                    <MenuItem.Icon>
+                                        <Rectangle
+                                            Width="16"
+                                            Height="16"
+                                            Fill="LightPink" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    Click="MenuItem_Click"
+                                    Header="Clear"
+                                    Tag="none" />
+                            </ContextMenu>
+                        </Border.ContextMenu>
                         <StackPanel Margin="0,-2" Orientation="Horizontal">
+
                             <StackPanel.Resources>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="FontSize" Value="{Binding ElementName=codeMapList, Path=FontSize, Converter={StaticResource IdeFontSizeToToolWindowsFontSizeConverter}}" />
@@ -127,13 +182,34 @@
                                     Stretch="Uniform" />
                             </Grid>
                             <TextBlock
-                                Margin="5,0,0,0"
+                                Margin="5,0,5,0"
+                                Padding="2,0,3,0"
                                 VerticalAlignment="Center"
-                                Text="{Binding Content}" />
+                                Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
+                                Text="{Binding Content}"
+                                Visibility="{Binding Content, Converter={StaticResource TextLengthToVisibilityConverter}}">
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource BookmarkToForegroundConverter}">
+                                        <Binding ElementName="codeMapList" Path="Foreground" />
+                                        <Binding Path="ColorContext" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+
                             <TextBlock
+                                Padding="2,0,3,0"
                                 VerticalAlignment="Center"
+                                Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
                                 FontWeight="{DynamicResource {x:Static vsshell:VsFonts.EnvironmentBoldFontWeightKey}}"
-                                Text="{Binding Title}" />
+                                Text="{Binding Title}"
+                                Visibility="{Binding Title, Converter={StaticResource TextLengthToVisibilityConverter}}">
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource BookmarkToForegroundConverter}">
+                                        <Binding ElementName="codeMapList" Path="Foreground" />
+                                        <Binding Path="ColorContext" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                            </TextBlock>
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontStyle="Italic"

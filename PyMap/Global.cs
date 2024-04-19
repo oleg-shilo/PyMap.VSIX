@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -18,6 +20,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using EnvDTE;
 using EnvDTE80;
+using Newtonsoft.Json.Linq;
 
 // using PyMap.Resources.icons.dark;
 
@@ -216,14 +219,24 @@ namespace PyMap
         Region,
     }
 
-    public class MemberInfo
+    public class MemberInfo : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public int Line { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";
         public string MemberContext { set; get; } = "";
         public string Title { set; get; } = "";
+
+        string colorContext;
+        public string ColorContext { get => colorContext; set { colorContext = value; OnPropertyChanged(nameof(ColorContext)); } }
         public bool IsPublic { set; get; } = true;
 
         public MemberType MemberType { set; get; }
@@ -273,6 +286,19 @@ namespace PyMap
         }
     }
 
+    public sealed class TextLengthToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            if (!(value is string))
+                return null;
+            return string.IsNullOrEmpty((string)value) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    }
+
     public sealed class IdeFontSizeToToolWindowsFontSizeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -289,21 +315,74 @@ namespace PyMap
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 
-    public class KewordColorConverter : IValueConverter
+    public class BookmarkToBackgroundConverter : IValueConverter
     {
-        static SolidColorBrush lightBlue = new SolidColorBrush(Color.FromRgb(59, 138, 210));
+        static SolidColorBrush LightYellow = new SolidColorBrush(Color.FromRgb(245, 204, 132));
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var brush = value as SolidColorBrush;
-            if (brush != null)
+            try
             {
-                if (brush.Color.Brightness() < 50)
-                    return Brushes.LightSkyBlue;
-                //return lightBlue;
-                else
-                    return Brushes.Blue;
+                if (value is string)
+                {
+                    var name = (value as string);
+                    switch (name)
+                    {
+                        case "bookmark1": return LightYellow;
+                        case "bookmark2": return Brushes.LightBlue;
+                        case "bookmark3": return Brushes.LightGreen;
+                        case "bookmark4": return Brushes.LightPink;
+                        default: break;
+                    }
+                }
             }
+            catch { }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class BookmarkToForegroundConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var defaultForeground = values[0];
+            var bookmarkForeground = Brushes.DarkBlue;
+
+            if (values.Length > 1 && !string.IsNullOrEmpty(values[1] as string))
+            {
+                return bookmarkForeground;
+            }
+            else
+            {
+                return defaultForeground;
+            }
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class BookmarkToForegroundConverter1 : IValueConverter
+    {
+        public object Context { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            try
+            {
+                if (value is string && (value as string) != "")
+                    return Colors.DarkGray;
+                else
+                    return (VsBrushes.WindowTextKey as SolidColorBrush).Color;
+            }
+            catch { }
             return value;
         }
 

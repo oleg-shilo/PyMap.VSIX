@@ -205,6 +205,10 @@ namespace PyMap
         string SerializeSettings()
         {
             return $"FontSize:{codeMapList.FontSize}\n" +
+                   $"Classes:{parser.Classes}\n" +
+                   $"Interfaces:{parser.Interfaces}\n" +
+                   $"Structs:{parser.Structs}\n" +
+                   $"Others:{parser.Others}\n" +
                    $"PublicMethods:{parser.PublicMethods}\n" +
                    $"PublicProperties:{parser.PublicProperties}\n" +
                    $"PublicFields:{parser.PublicFields}\n" +
@@ -213,6 +217,7 @@ namespace PyMap
                    $"PrivateFields:{parser.PrivateFields}\n" +
                    $"SortMembers:{parser.SortMembers}\n" +
                    $"AutoSynch:{parser.AutoSynch}\n" +
+
                    $"ShowMethodSignatures:{parser.ShowMethodSignatures}";
         }
 
@@ -232,6 +237,10 @@ namespace PyMap
                 if (item.Key == "PublicFields") parser.PublicFields = bool.Parse(item.Value);
                 else if (item.Key == "PublicProperties") parser.PublicProperties = bool.Parse(item.Value);
                 else if (item.Key == "PublicMethods") parser.PublicMethods = bool.Parse(item.Value);
+                else if (item.Key == "Classes") parser.Classes = bool.Parse(item.Value);
+                else if (item.Key == "Interfaces") parser.Interfaces = bool.Parse(item.Value);
+                else if (item.Key == "Structs") parser.Structs = bool.Parse(item.Value);
+                else if (item.Key == "Others") parser.Others = bool.Parse(item.Value);
                 else if (item.Key == "PrivateProperties") parser.PrivateProperties = bool.Parse(item.Value);
                 else if (item.Key == "PrivateFields") parser.PrivateFields = bool.Parse(item.Value);
                 else if (item.Key == "PrivateMethods") parser.PrivateMethods = bool.Parse(item.Value);
@@ -417,6 +426,29 @@ namespace PyMap
         {
             parser.ClassName = "";
             parser.MemberName = "";
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                MenuItem menuItem = sender as MenuItem;
+                ContextMenu contextMenu = menuItem.Parent as ContextMenu;
+                var element = contextMenu.PlacementTarget as FrameworkElement;
+                var info = element.DataContext as MemberInfo;
+
+                if (info != null)
+                {
+                    var bookmarkName = menuItem.Tag.ToString();
+                    if (bookmarkName == "none")
+                        info.ColorContext = "";
+                    else
+                        info.ColorContext = bookmarkName;
+                }
+            }
+            catch
+            {
+            }
         }
     }
 }
