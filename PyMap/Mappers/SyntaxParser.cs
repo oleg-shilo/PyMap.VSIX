@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace PyMap
+namespace CodeMap
 {
     using System.ComponentModel;
     using System.IO;
@@ -346,10 +346,10 @@ namespace PyMap
 
     public class AppImages
     {
-        public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource PublicOverlay => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource Clear => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.clear.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.clear.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource Filter => (ExtensionHost.IsDarkTheme ? "PyMap.Resources.icons.dark.filter.png".LoadAsEmbeddedResourceImage() : "PyMap.Resources.icons.light.filter.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource PublicOverlay => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource Clear => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.clear.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.clear.png".LoadAsEmbeddedResourceImage());
+        public static BitmapSource Filter => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.filter.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.filter.png".LoadAsEmbeddedResourceImage());
     }
 }

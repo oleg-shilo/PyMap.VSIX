@@ -23,7 +23,7 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using EnvDTE;
 using EnvDTE80;
 
-namespace PyMap
+namespace CodeMap
 {
     static class ExtensionHost
     {
@@ -147,7 +147,7 @@ namespace PyMap
 
             // if the selection is changed, the scroll position should be changed to the default position.
             // This is to avoid jumps to most right when the member signature is too wide.
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            _ = Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 codeMapList.FindChild<ScrollViewer>()?.ScrollToHorizontalOffset(0);
             }));
@@ -170,13 +170,23 @@ namespace PyMap
                     string settings_dir = Path.GetDirectoryName(_settingsFile);
                     if (!Directory.Exists(settings_dir))
                         Directory.CreateDirectory(settings_dir);
-                    File.WriteAllText(_settingsFile, "");
+
+                    if (File.Exists(_settingsFileOld))
+                    {
+                        File.Move(_settingsFileOld, _settingsFile);
+                        try { Directory.Delete(Path.GetDirectoryName(_settingsFileOld), true); } catch { }
+                    }
+                    else
+                    {
+                        File.WriteAllText(_settingsFile, "");
+                    }
                 }
                 return _settingsFile;
             }
         }
 
-        static string _settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PyMap.2022.VSIX", "settings.dat");
+        static string _settingsFileOld = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PyMap.2022.VSIX", "settings.dat");
+        static string _settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CodeMap.2022.VSIX", "settings.dat");
 
         void SaveSettings()
         {
@@ -440,10 +450,19 @@ namespace PyMap
                 if (info != null)
                 {
                     var bookmarkName = menuItem.Tag.ToString();
-                    if (bookmarkName == "none")
+                    if (bookmarkName == "none-all")
+                    {
+                        BookmarksStore.Clear(docFile);
+                        parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
+                    }
+                    else if (bookmarkName == "none")
+                    {
                         info.ColorContext = "";
+                    }
                     else
+                    {
                         info.ColorContext = bookmarkName;
+                    }
 
                     if (!string.IsNullOrEmpty(docFile) && File.Exists(docFile))
                     {

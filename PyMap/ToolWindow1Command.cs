@@ -9,7 +9,7 @@ using EnvDTE;
 using EnvDTE80;
 using Task = System.Threading.Tasks.Task;
 
-namespace PyMap
+namespace CodeMap
 {
     /// <summary>
     /// Command handler

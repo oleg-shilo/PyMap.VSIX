@@ -13,8 +13,8 @@
     <ProjectGuid>{EC266248-44AC-4F99-84AE-CF6DA8EBC143}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PyMap</RootNamespace>
-    <AssemblyName>PyMap</AssemblyName>
+    <RootNamespace>CodeMap</RootNamespace>
+    <AssemblyName>CodeMap</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <UseCodebase>true</UseCodebase>
@@ -48,7 +48,7 @@
     <Compile Include="Mappers\CSharpMapper.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PyMapPackage.cs" />
+    <Compile Include="CodeMapPackage.cs" />
     <Compile Include="Mappers\PythonMapper.cs" />
     <Compile Include="Mappers\SyntaxParser.cs" />
     <Compile Include="ToolWindow1.cs" />
@@ -132,7 +132,7 @@
     <EmbeddedResource Include="Resources\icons\light\public.png" />
     <Content Include="Resources\ToolWindow1Command.png" />
     <Content Include="Resources\ToolWindow1Package.ico" />
-    <VSCTCompile Include="PyMapPackage.vsct">
+    <VSCTCompile Include="CodeMapPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
     <Content Include="stylesheet.css" />
@@ -148,7 +148,7 @@
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup>
     <PostBuildEvent>md "$(ProjectDir)..\out"
-copy "$(TargetDir)\PyMap.vsix" "$(ProjectDir)..\out\PyMap.vsix"</PostBuildEvent>
+copy "$(TargetDir)\CodeMap.vsix" "$(ProjectDir)..\out\CodeMap.vsix"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

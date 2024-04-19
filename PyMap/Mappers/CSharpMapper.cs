@@ -7,7 +7,7 @@ using System.Windows.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using PyMap;
+using CodeMap;
 
 class CSharpMapper
 {
@@ -89,7 +89,7 @@ class CSharpMapper
                     Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                     Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = method.Identifier.Text,
-                    MemberContext = " (" + paramList + ")",
+                    MemberContext = "(" + paramList + ")",
                     ContentType = "    ",
                     Children = new List<MemberInfo>(),
                     IsPublic = true,
@@ -166,7 +166,7 @@ class CSharpMapper
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
-                        MemberContext = " (" + paramList + ")",
+                        MemberContext = "(" + paramList + ")",
                         ContentType = "    ",
                         Children = new List<MemberInfo>(),
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
@@ -189,7 +189,7 @@ class CSharpMapper
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         ContentType = "    ",
                         Children = new List<MemberInfo>(),
-                        MemberContext = " (" + paramList + ")",
+                        MemberContext = "(" + paramList + ")",
                         MemberType = MemberType.Constructor
                     };
                 }

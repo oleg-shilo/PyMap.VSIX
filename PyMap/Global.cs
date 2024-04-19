@@ -25,7 +25,7 @@ using Newtonsoft.Json.Linq;
 
 // using PyMap.Resources.icons.dark;
 
-namespace PyMap
+namespace CodeMap
 {
     static class Global
     {
@@ -182,28 +182,28 @@ namespace PyMap
     {
         static public Dictionary<MemberType, BitmapSource> Dark = new Dictionary<MemberType, BitmapSource>
         {
-            { MemberType.Interface,  "PyMap.Resources.icons.dark.interface.png".LoadAsEmbeddedResourceImage() },
-            { MemberType.Property,   "PyMap.Resources.icons.dark.property.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Field,      "PyMap.Resources.icons.dark.field.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Class,      "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Struct,     "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Type,       "PyMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Method,     "PyMap.Resources.icons.dark.method.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Constructor,"PyMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Region,     "PyMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()}
+            { MemberType.Interface,  "CodeMap.Resources.icons.dark.interface.png".LoadAsEmbeddedResourceImage() },
+            { MemberType.Property,   "CodeMap.Resources.icons.dark.property.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Field,      "CodeMap.Resources.icons.dark.field.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Class,      "CodeMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Struct,     "CodeMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Type,       "CodeMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Method,     "CodeMap.Resources.icons.dark.method.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Constructor,"CodeMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Region,     "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()}
         };
 
         static public Dictionary<MemberType, BitmapSource> Light = new Dictionary<MemberType, BitmapSource>
         {
-            { MemberType.Interface,  "PyMap.Resources.icons.light.interface.png".LoadAsEmbeddedResourceImage() },
-            { MemberType.Property,   "PyMap.Resources.icons.light.property.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Field,      "PyMap.Resources.icons.light.field.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Class,      "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Struct,     "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Type,       "PyMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Method,     "PyMap.Resources.icons.light.method.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Constructor,"PyMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Region,     "PyMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()}
+            { MemberType.Interface,  "CodeMap.Resources.icons.light.interface.png".LoadAsEmbeddedResourceImage() },
+            { MemberType.Property,   "CodeMap.Resources.icons.light.property.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Field,      "CodeMap.Resources.icons.light.field.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Class,      "CodeMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Struct,     "CodeMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Type,       "CodeMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Method,     "CodeMap.Resources.icons.light.method.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Constructor,"CodeMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.Region,     "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()}
         };
     }
 
@@ -236,15 +236,15 @@ namespace PyMap
                 });
         }
 
-        public static void Store(string documentName, string location, string bookmarkName)
+        public static void Store(string documentName, string bookmarkId, string bookmarkName)
         {
             if (!Items.ContainsKey(documentName))
                 Items[documentName] = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
-                Items[documentName].Remove(location);
+                Items[documentName].Remove(bookmarkId);
             else
-                Items[documentName][location] = bookmarkName;
+                Items[documentName][bookmarkId] = bookmarkName;
         }
 
         public static string Read(string documentName, string location)
@@ -255,7 +255,13 @@ namespace PyMap
             return null;
         }
 
-        static string bookmarksFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".vs", "codemap.vs.json");
+        public static void Clear(string documentName)
+        {
+            if (Items.ContainsKey(documentName))
+                Items[documentName].Remove(documentName);
+        }
+
+        static string bookmarksFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CodeMap.2022.VSIX", "codemap.vs.json");
 
         public static void Load()
         {
