@@ -389,6 +389,7 @@ namespace CodeMap
     public class BookmarkToBackgroundConverter : IValueConverter
     {
         static SolidColorBrush LightYellow = new SolidColorBrush(Color.FromRgb(245, 204, 132));
+        static SolidColorBrush NoBookmark = new SolidColorBrush(Color.FromArgb(1, 255, 255, 255));
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -408,7 +409,7 @@ namespace CodeMap
                 }
             }
             catch { }
-            return value;
+            return NoBookmark;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
