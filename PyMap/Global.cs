@@ -261,7 +261,9 @@ namespace CodeMap
         public static void Clear(string documentName)
         {
             if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
-                Items[documentName].Remove(documentName);
+            {
+                Items.Remove(documentName);
+            }
         }
 
         static string bookmarksFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CodeMap.2022.VSIX", "codemap.vs.json");
@@ -391,6 +393,11 @@ namespace CodeMap
 
     public class BookmarkToBackgroundConverter : IValueConverter
     {
+        public SolidColorBrush Bookmark1 { get; set; } = LightYellow;
+        public SolidColorBrush Bookmark2 { get; set; } = Brushes.LightBlue;
+        public SolidColorBrush Bookmark3 { get; set; } = Brushes.LightGreen;
+        public SolidColorBrush Bookmark4 { get; set; } = Brushes.LightPink;
+
         static SolidColorBrush LightYellow = new SolidColorBrush(Color.FromRgb(245, 204, 132));
         static SolidColorBrush NoBookmark = new SolidColorBrush(Color.FromArgb(1, 255, 255, 255));
 
@@ -403,10 +410,10 @@ namespace CodeMap
                     var name = (value as string);
                     switch (name)
                     {
-                        case "bookmark1": return LightYellow;
-                        case "bookmark2": return Brushes.LightBlue;
-                        case "bookmark3": return Brushes.LightGreen;
-                        case "bookmark4": return Brushes.LightPink;
+                        case "bookmark1": return Bookmark1;
+                        case "bookmark2": return Bookmark2;
+                        case "bookmark3": return Bookmark3;
+                        case "bookmark4": return Bookmark4;
                         default: break;
                     }
                 }

@@ -440,28 +440,26 @@ namespace CodeMap
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (codeMapList.SelectedItem is MemberInfo info && sender is MenuItem menuItem)
             {
-                MenuItem menuItem = sender as MenuItem;
-                ContextMenu contextMenu = menuItem.Parent as ContextMenu;
-                var element = contextMenu.PlacementTarget as FrameworkElement;
-                var info = element.DataContext as MemberInfo;
-
-                var bookmarkName = menuItem.Tag.ToString();
-                if (bookmarkName == "none-all")
+                try
                 {
-                    parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
-                    BookmarksStore.Clear(docFile);
+                    var bookmarkName = menuItem.Tag.ToString();
+                    if (bookmarkName == "none-all")
+                    {
+                        parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
+                        BookmarksStore.Clear(docFile);
+                    }
+                    else if (info != null)
+                    {
+                        info.ColorContext = (bookmarkName == "none") ? "" : bookmarkName;
+                        BookmarksStore.Store(docFile, info.Id, info.ColorContext);
+                    }
+                    _ = Task.Run(BookmarksStore.Save);
                 }
-                else if (info != null)
+                catch
                 {
-                    info.ColorContext = (bookmarkName == "none") ? "" : bookmarkName;
-                    BookmarksStore.Store(docFile, info.Id, info.ColorContext);
                 }
-                _ = Task.Run(BookmarksStore.Save);
-            }
-            catch
-            {
             }
         }
     }

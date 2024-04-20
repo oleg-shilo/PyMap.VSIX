@@ -15,41 +15,76 @@
     Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <local:BookmarkToBackgroundConverter x:Key="BookmarkToBackgroundConverter" />
+
+        <SolidColorBrush x:Key="Bookmark1">#FFF5CC84</SolidColorBrush>
+        <SolidColorBrush x:Key="Bookmark2">#FFADD8E6</SolidColorBrush>
+        <SolidColorBrush x:Key="Bookmark3">#FF90EE90</SolidColorBrush>
+        <SolidColorBrush x:Key="Bookmark4">#FFFFB6C1</SolidColorBrush>
+        <!--
+            Cannot bind pure CLR properties of the converter so redefine the colors but keep it close to the resource
+            colors so it's ease to mange them.
+        -->
+        <local:BookmarkToBackgroundConverter
+            x:Key="BookmarkToBackgroundConverter"
+            Bookmark1="#FFF5CC84"
+            Bookmark2="#FFADD8E6"
+            Bookmark3="#FF90EE90"
+            Bookmark4="#FFFFB6C1" />
+
         <local:BookmarkToForegroundConverter x:Key="BookmarkToForegroundConverter" />
         <local:TextLengthToVisibilityConverter x:Key="TextLengthToVisibilityConverter" />
         <local:IdeFontSizeToToolWindowsFontSizeConverter x:Key="IdeFontSizeToToolWindowsFontSizeConverter" />
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
-        <!--<Style TargetType="ListBoxItem">
+        <Style TargetType="{x:Type ContextMenu}">
+            <!--<Setter Property="Background" Value="{StaticResource ShadeBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ShadeBrush}" />-->
+            <Setter Property="Foreground" Value="White" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter />
+                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                        <Border Uid="Border_93">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="Tag" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="Padding" Value="0,0,5,5" />
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect
+                                                        BlurRadius="4"
+                                                        Opacity="0.8"
+                                                        ShadowDepth="1" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border
+                                Uid="Border_50"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0">
+                                <ScrollViewer
+                                    Uid="ScrollViewer_9"
+                                    CanContentScroll="True"
+                                    Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer,
+                                                                                  TypeInTargetAssembly={x:Type FrameworkElement}}}">
+                                    <ItemsPresenter
+                                        Uid="ItemsPresenter_5"
+                                        Margin="{TemplateBinding Padding}"
+                                        KeyboardNavigation.DirectionalNavigation="Cycle"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </ScrollViewer>
+                            </Border>
                         </Border>
-                        <ControlTemplate.Triggers>
-        -->
-        <!--  Remove the hover border  -->
-        <!--
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="Transparent" />
-                            </Trigger>
-        -->
-        <!--  Optional: Add other visual state changes  -->
-        <!--
-                            <Trigger Property="IsSelected" Value="True">
-        -->
-        <!--<Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" />-->
-        <!--
-                                <Setter Property="BorderBrush" Value="#24749B" />
-                                <Setter Property="BorderThickness" Value="1,1,1,1" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>-->
+        </Style>
     </UserControl.Resources>
     <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
         <Grid.RowDefinitions>
@@ -133,9 +168,108 @@
             HorizontalContentAlignment="Stretch"
             d:ItemsSource="{d:SampleData ItemCount=5}"
             Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
+            BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
+            BorderThickness="0,0,0,1"
             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
             ItemsSource="{Binding MemberList}"
             PreviewMouseWheel="codeMapList_PreviewMouseWheel">
+            <ListBox.ContextMenu>
+                <ContextMenu
+                    Background="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarMenuIconBackgroundKey}}"
+                    BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
+                    BorderThickness="0"
+                    DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}"
+                    Foreground="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarTextActiveKey}}">
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Header="Bookmark 1"
+                        Tag="bookmark1">
+                        <MenuItem.Icon>
+                            <Rectangle
+                                Width="16"
+                                Height="16"
+                                Fill="{StaticResource Bookmark1}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Header="Bookmark 2"
+                        Tag="bookmark2">
+                        <MenuItem.Icon>
+                            <Rectangle
+                                Width="16"
+                                Height="16"
+                                Fill="{StaticResource Bookmark2}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Header="Bookmark 3"
+                        Tag="bookmark3">
+                        <MenuItem.Icon>
+                            <Rectangle
+                                Width="16"
+                                Height="16"
+                                Fill="{StaticResource Bookmark3}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Header="Bookmark 4"
+                        Tag="bookmark4">
+                        <MenuItem.Icon>
+                            <Rectangle
+                                Width="16"
+                                Height="16"
+                                Fill="{StaticResource Bookmark4}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Header="Clear (node)"
+                        Tag="none">
+
+                        <MenuItem.Icon>
+                            <Border
+                                Width="16"
+                                Height="16"
+                                BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
+                                BorderThickness="1" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Header="Clear (all)"
+                        Tag="none-all">
+
+                        <MenuItem.Icon>
+                            <Grid
+                                Width="16"
+                                Height="16"
+                                Margin="-2,0,0,0">
+                                <Border
+                                    Width="11"
+                                    Height="11"
+                                    BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
+                                    BorderThickness="1" />
+                                <Border
+                                    Width="11"
+                                    Height="11"
+                                    Margin="5,5,0,0"
+                                    BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
+                                    BorderThickness="1" />
+                            </Grid>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Padding" Value="1" />
+                    <Setter Property="Background" Value="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}" />
+                </Style>
+            </ListBox.ItemContainerStyle>
 
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -143,62 +277,7 @@
                         MinHeight="0"
                         HorizontalAlignment="Stretch"
                         Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}">
-                        <Border.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 1"
-                                    Tag="bookmark1">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="#FFF5CC84" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 2"
-                                    Tag="bookmark2">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="LightBlue" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 3"
-                                    Tag="bookmark3">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="YellowGreen" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 4"
-                                    Tag="bookmark4">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="LightPink" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Clear (node)"
-                                    Tag="none" />
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Clear (all)"
-                                    Tag="none-all" />
-                            </ContextMenu>
-                        </Border.ContextMenu>
+
                         <StackPanel Margin="0,-2" Orientation="Horizontal">
 
                             <StackPanel.Resources>
@@ -272,6 +351,7 @@
 
         <Expander
             Grid.Row="2"
+            Margin="0,5,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Bottom"
             Background="{Binding ElementName=codeMapList, Path=Background}"
