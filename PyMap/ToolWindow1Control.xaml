@@ -15,11 +15,69 @@
     Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <local:BookmarkToBackgroundConverter x:Key="BookmarkToBackgroundConverter" />
-        <local:BookmarkToForegroundConverter x:Key="BookmarkToForegroundConverter" />
+        <local:BookmarkToBackgroundConverter
+            Bookmark1="#80F5CC84"
+            Bookmark2="#80ADD8E6"
+            Bookmark3="#8090EE90"
+            Bookmark4="#80FFB6C1"
+            x:Key="BookmarkToBackgroundConverter"/>
         <local:TextLengthToVisibilityConverter x:Key="TextLengthToVisibilityConverter" />
         <local:IdeFontSizeToToolWindowsFontSizeConverter x:Key="IdeFontSizeToToolWindowsFontSizeConverter" />
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <Style TargetType="{x:Type ContextMenu}">
+            <Setter Property="Background" Value="{StaticResource ShadeBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ShadeBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                        <Border Uid="Border_93">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="Tag"
+                    Value="{DynamicResource
+                        {x:Static SystemParameters.DropShadowKey}}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger
+                            Binding="{Binding Tag,
+                                RelativeSource={RelativeSource Self}}"
+                            Value="True">
+                                            <Setter Property="Background"
+                            Value="Transparent"/>
+                                            <Setter Property="Padding"
+                            Value="0,0,5,5"/>
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect
+                                    BlurRadius="4"
+                                    Opacity="0.8"
+                                    ShadowDepth="1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="0"
+                Background="{TemplateBinding Background}"
+                Uid="Border_50">
+                                <ScrollViewer CanContentScroll="True"
+                Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer,
+                        TypeInTargetAssembly={x:Type FrameworkElement}}}"
+                        Uid="ScrollViewer_9">
+                                    <ItemsPresenter
+                    KeyboardNavigation.DirectionalNavigation="Cycle"
+                    Margin="{TemplateBinding Padding}"
+                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                    Uid="ItemsPresenter_5"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
     <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
         <Grid.RowDefinitions>
@@ -101,127 +159,97 @@
             x:Name="codeMapList"
             Grid.Row="1"
             HorizontalContentAlignment="Stretch"
-            d:ItemsSource="{d:SampleData ItemCount=5}"
+            BorderThickness="0 0 0 1"
+            BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
             Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
             ItemsSource="{Binding MemberList}"
+            d:ItemsSource="{d:SampleData ItemCount=5}"
             PreviewMouseWheel="codeMapList_PreviewMouseWheel">
+
+            <ListBox.ContextMenu>
+                <ContextMenu
+                    Background="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarMenuIconBackgroundKey}}"
+                    Foreground="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarTextActiveKey}}"
+                    BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
+                    BorderThickness="0"
+                    DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Click="MenuItem_Click" Header="Bookmark 1" Tag="Bookmark1" Background="Transparent">
+                        <MenuItem.Icon>
+                            <Rectangle Width="12" Height="12" Fill="#FFF5CC84" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Click="MenuItem_Click" Header="Bookmark 2" Tag="Bookmark2">
+                        <MenuItem.Icon>
+                            <Rectangle Width="12" Height="12" Fill="LightBlue" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Click="MenuItem_Click" Header="Bookmark 3" Tag="Bookmark3">
+                        <MenuItem.Icon>
+                            <Rectangle Width="12" Height="12" Fill="YellowGreen" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Click="MenuItem_Click" Header="Bookmark 4" Tag="Bookmark4">
+                        <MenuItem.Icon>
+                            <Rectangle Width="12" Height="12" Fill="LightPink" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Click="MenuItem_Click" Header="Clear (node)" Tag="none" />
+                    <MenuItem Click="MenuItem_Click" Header="Clear (all)" Tag="none-all" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Padding" Value="0 0 0 1" />
+                    <Setter Property="Background" Value="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}" />
+                </Style>
+            </ListBox.ItemContainerStyle>
 
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border MinHeight="0">
-                        <Border.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 1"
-                                    Tag="bookmark1">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="#FFF5CC84" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 2"
-                                    Tag="bookmark2">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="LightBlue" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 3"
-                                    Tag="bookmark3">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="YellowGreen" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Bookmark 4"
-                                    Tag="bookmark4">
-                                    <MenuItem.Icon>
-                                        <Rectangle
-                                            Width="16"
-                                            Height="16"
-                                            Fill="LightPink" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Clear (node)"
-                                    Tag="none" />
-                                <MenuItem
-                                    Click="MenuItem_Click"
-                                    Header="Clear (all)"
-                                    Tag="none-all" />
-                            </ContextMenu>
-                        </Border.ContextMenu>
-                        <StackPanel Margin="0,-2" Orientation="Horizontal">
-
-                            <StackPanel.Resources>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="FontSize" Value="{Binding ElementName=codeMapList, Path=FontSize, Converter={StaticResource IdeFontSizeToToolWindowsFontSizeConverter}}" />
-                                </Style>
-                            </StackPanel.Resources>
-                            <TextBlock Foreground="{x:Null}" Text="{Binding ContentType}" />
-                            <Grid>
-                                <Image
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="FontSize" Value="{Binding ElementName=codeMapList, Path=FontSize, Converter={StaticResource IdeFontSizeToToolWindowsFontSizeConverter}}" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <TextBlock Foreground="{x:Null}" Text="{Binding ContentType}" />
+                        <Grid>
+                            <Image
                                     x:Name="temaplateRoot"
                                     VerticalAlignment="Center"
                                     Source="{Binding TypeIcon}"
                                     Stretch="Uniform" />
-                                <Image
+                            <Image
                                     VerticalAlignment="Center"
                                     Source="{Binding AccessType}"
                                     Stretch="Uniform" />
-                            </Grid>
-                            <TextBlock
+                        </Grid>
+                        <TextBlock
                                 Margin="5,0,5,0"
                                 Padding="2,0,3,0"
                                 VerticalAlignment="Center"
-                                Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
                                 Text="{Binding Content}"
                                 Visibility="{Binding Content, Converter={StaticResource TextLengthToVisibilityConverter}}">
-                                <TextBlock.Foreground>
-                                    <MultiBinding Converter="{StaticResource BookmarkToForegroundConverter}">
-                                        <Binding ElementName="codeMapList" Path="Foreground" />
-                                        <Binding Path="ColorContext" />
-                                    </MultiBinding>
-                                </TextBlock.Foreground>
-                            </TextBlock>
-
-                            <TextBlock
+                        </TextBlock>
+                        <TextBlock
                                 Padding="2,0,3,0"
                                 VerticalAlignment="Center"
-                                Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
                                 FontWeight="{DynamicResource {x:Static vsshell:VsFonts.EnvironmentBoldFontWeightKey}}"
                                 Text="{Binding Title}"
                                 Visibility="{Binding Title, Converter={StaticResource TextLengthToVisibilityConverter}}">
-                                <TextBlock.Foreground>
-                                    <MultiBinding Converter="{StaticResource BookmarkToForegroundConverter}">
-                                        <Binding ElementName="codeMapList" Path="Foreground" />
-                                        <Binding Path="ColorContext" />
-                                    </MultiBinding>
-                                </TextBlock.Foreground>
-                            </TextBlock>
-                            <TextBlock
+                        </TextBlock>
+                        <TextBlock
                                 VerticalAlignment="Center"
                                 FontStyle="Italic"
                                 FontWeight="Light"
                                 Foreground="Gray"
                                 Text="{Binding MemberContext}" />
-                        </StackPanel>
-                    </Border>
+                    </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
@@ -247,7 +275,7 @@
             FlowDirection="LeftToRight"
             IsExpanded="false"
             ToolTip="Adjust mapping settings">
-            <Grid Background="{Binding ElementName=codeMapList, Path=Background}">
+            <Grid Background="{Binding ElementName=codeMapList, Path=Background}" Margin="0 5 0 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />

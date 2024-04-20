@@ -174,7 +174,9 @@ namespace CodeMap
                     if (File.Exists(_settingsFileOld))
                     {
                         File.Move(_settingsFileOld, _settingsFile);
-                        try { Directory.Delete(Path.GetDirectoryName(_settingsFileOld), true); } catch { }
+                        try
+                        { Directory.Delete(Path.GetDirectoryName(_settingsFileOld), true); }
+                        catch { }
                     }
                     else
                     {
@@ -244,20 +246,34 @@ namespace CodeMap
 
             foreach (var item in items)
             {
-                if (item.Key == "PublicFields") parser.PublicFields = bool.Parse(item.Value);
-                else if (item.Key == "PublicProperties") parser.PublicProperties = bool.Parse(item.Value);
-                else if (item.Key == "PublicMethods") parser.PublicMethods = bool.Parse(item.Value);
-                else if (item.Key == "Classes") parser.Classes = bool.Parse(item.Value);
-                else if (item.Key == "Interfaces") parser.Interfaces = bool.Parse(item.Value);
-                else if (item.Key == "Structs") parser.Structs = bool.Parse(item.Value);
-                else if (item.Key == "Others") parser.Others = bool.Parse(item.Value);
-                else if (item.Key == "PrivateProperties") parser.PrivateProperties = bool.Parse(item.Value);
-                else if (item.Key == "PrivateFields") parser.PrivateFields = bool.Parse(item.Value);
-                else if (item.Key == "PrivateMethods") parser.PrivateMethods = bool.Parse(item.Value);
-                else if (item.Key == "SortMembers") parser.SortMembers = bool.Parse(item.Value);
-                else if (item.Key == "ShowMethodSignatures") parser.ShowMethodSignatures = bool.Parse(item.Value);
-                else if (item.Key == "AutoSynch") parser.AutoSynch = bool.Parse(item.Value);
-                else if (item.Key == "FontSize" && double.TryParse(item.Value, out double new_size)) codeMapList.FontSize = new_size;
+                if (item.Key == "PublicFields")
+                    parser.PublicFields = bool.Parse(item.Value);
+                else if (item.Key == "PublicProperties")
+                    parser.PublicProperties = bool.Parse(item.Value);
+                else if (item.Key == "PublicMethods")
+                    parser.PublicMethods = bool.Parse(item.Value);
+                else if (item.Key == "Classes")
+                    parser.Classes = bool.Parse(item.Value);
+                else if (item.Key == "Interfaces")
+                    parser.Interfaces = bool.Parse(item.Value);
+                else if (item.Key == "Structs")
+                    parser.Structs = bool.Parse(item.Value);
+                else if (item.Key == "Others")
+                    parser.Others = bool.Parse(item.Value);
+                else if (item.Key == "PrivateProperties")
+                    parser.PrivateProperties = bool.Parse(item.Value);
+                else if (item.Key == "PrivateFields")
+                    parser.PrivateFields = bool.Parse(item.Value);
+                else if (item.Key == "PrivateMethods")
+                    parser.PrivateMethods = bool.Parse(item.Value);
+                else if (item.Key == "SortMembers")
+                    parser.SortMembers = bool.Parse(item.Value);
+                else if (item.Key == "ShowMethodSignatures")
+                    parser.ShowMethodSignatures = bool.Parse(item.Value);
+                else if (item.Key == "AutoSynch")
+                    parser.AutoSynch = bool.Parse(item.Value);
+                else if (item.Key == "FontSize" && double.TryParse(item.Value, out double new_size))
+                    codeMapList.FontSize = new_size;
             }
         }
 
@@ -280,7 +296,8 @@ namespace CodeMap
                 ThreadHelper.ThrowIfNotOnUIThread();
 
                 Document doc = null;
-                try { doc = dte.ActiveDocument; } // can throw (e.g. project properties page)
+                try
+                { doc = dte.ActiveDocument; } // can throw (e.g. project properties page)
                 catch { }
 
                 if (doc != null)
@@ -440,39 +457,28 @@ namespace CodeMap
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (codeMapList.SelectedItem is MemberInfo info && sender is MenuItem menuItem)
             {
-                MenuItem menuItem = sender as MenuItem;
-                ContextMenu contextMenu = menuItem.Parent as ContextMenu;
-                var element = contextMenu.PlacementTarget as FrameworkElement;
-                var info = element.DataContext as MemberInfo;
-
-                if (info != null)
+                var bookmarkName = menuItem.Tag.ToString();
+                if (bookmarkName == "none-all")
                 {
-                    var bookmarkName = menuItem.Tag.ToString();
-                    if (bookmarkName == "none-all")
-                    {
-                        BookmarksStore.Clear(docFile);
-                        parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
-                    }
-                    else if (bookmarkName == "none")
-                    {
-                        info.ColorContext = "";
-                    }
-                    else
-                    {
-                        info.ColorContext = bookmarkName;
-                    }
-
-                    if (!string.IsNullOrEmpty(docFile) && File.Exists(docFile))
-                    {
-                        BookmarksStore.Store(docFile, info.Id, info.ColorContext);
-                        _ = Task.Run(BookmarksStore.Save);
-                    }
+                    BookmarksStore.Clear(docFile);
+                    parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
                 }
-            }
-            catch
-            {
+                else if (bookmarkName == "none")
+                {
+                    info.ColorContext = "";
+                }
+                else
+                {
+                    info.ColorContext = bookmarkName;
+                }
+
+                if (!string.IsNullOrEmpty(docFile) && File.Exists(docFile))
+                {
+                    BookmarksStore.Store(docFile, info.Id, info.ColorContext);
+                    _ = Task.Run(BookmarksStore.Save);
+                }
             }
         }
     }

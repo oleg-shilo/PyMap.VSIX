@@ -388,26 +388,28 @@ namespace CodeMap
 
     public class BookmarkToBackgroundConverter : IValueConverter
     {
-        static SolidColorBrush LightYellow = new SolidColorBrush(Color.FromRgb(245, 204, 132));
+        public SolidColorBrush Bookmark1 { get; set; }
+        public SolidColorBrush Bookmark2 { get; set; }
+        public SolidColorBrush Bookmark3 { get; set; }
+        public SolidColorBrush Bookmark4 { get; set; }
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            try
+            if (value is string name)
             {
-                if (value is string)
+                switch (name)
                 {
-                    var name = (value as string);
-                    switch (name)
-                    {
-                        case "bookmark1": return LightYellow;
-                        case "bookmark2": return Brushes.LightBlue;
-                        case "bookmark3": return Brushes.LightGreen;
-                        case "bookmark4": return Brushes.LightPink;
-                        default: break;
-                    }
+                    case "Bookmark1":
+                        return Bookmark1;
+                    case "Bookmark2":
+                        return Bookmark2;
+                    case "Bookmark3":
+                        return Bookmark3;
+                    case "Bookmark4":
+                        return Bookmark4;
                 }
             }
-            catch { }
+
             return value;
         }
 
