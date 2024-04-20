@@ -29,11 +29,21 @@
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
+        -->
+        <!--  Remove the hover border  -->
+        <!--
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="Transparent" />
                             </Trigger>
+        -->
+        <!--  Optional: Add other visual state changes  -->
+        <!--
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="LightBlue" />
+        -->
+        <!--<Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" />-->
+        <!--
+                                <Setter Property="BorderBrush" Value="#24749B" />
+                                <Setter Property="BorderThickness" Value="1,1,1,1" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
