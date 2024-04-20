@@ -238,18 +238,21 @@ namespace CodeMap
 
         public static void Store(string documentName, string bookmarkId, string bookmarkName)
         {
-            if (!Items.ContainsKey(documentName))
-                Items[documentName] = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(documentName))
+            {
+                if (!Items.ContainsKey(documentName))
+                    Items[documentName] = new Dictionary<string, string>();
 
-            if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
-                Items[documentName].Remove(bookmarkId);
-            else
-                Items[documentName][bookmarkId] = bookmarkName;
+                if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
+                    Items[documentName].Remove(bookmarkId);
+                else
+                    Items[documentName][bookmarkId] = bookmarkName;
+            }
         }
 
         public static string Read(string documentName, string location)
         {
-            if (Items.ContainsKey(documentName))
+            if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
                 if (Items[documentName].ContainsKey(location))
                     return Items[documentName][location];
             return null;
@@ -257,7 +260,7 @@ namespace CodeMap
 
         public static void Clear(string documentName)
         {
-            if (Items.ContainsKey(documentName))
+            if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
                 Items[documentName].Remove(documentName);
         }
 

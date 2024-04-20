@@ -447,29 +447,18 @@ namespace CodeMap
                 var element = contextMenu.PlacementTarget as FrameworkElement;
                 var info = element.DataContext as MemberInfo;
 
-                if (info != null)
+                var bookmarkName = menuItem.Tag.ToString();
+                if (bookmarkName == "none-all")
                 {
-                    var bookmarkName = menuItem.Tag.ToString();
-                    if (bookmarkName == "none-all")
-                    {
-                        BookmarksStore.Clear(docFile);
-                        parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
-                    }
-                    else if (bookmarkName == "none")
-                    {
-                        info.ColorContext = "";
-                    }
-                    else
-                    {
-                        info.ColorContext = bookmarkName;
-                    }
-
-                    if (!string.IsNullOrEmpty(docFile) && File.Exists(docFile))
-                    {
-                        BookmarksStore.Store(docFile, info.Id, info.ColorContext);
-                        _ = Task.Run(BookmarksStore.Save);
-                    }
+                    parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
+                    BookmarksStore.Clear(docFile);
                 }
+                else if (info != null)
+                {
+                    info.ColorContext = (bookmarkName == "none") ? "" : bookmarkName;
+                    BookmarksStore.Store(docFile, info.Id, info.ColorContext);
+                }
+                _ = Task.Run(BookmarksStore.Save);
             }
             catch
             {
