@@ -45,6 +45,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BookmarkMargin.cs" />
+    <Compile Include="BookmarkMarginFactory.cs" />
     <Compile Include="Mappers\CSharpMapper.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -67,7 +69,9 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
