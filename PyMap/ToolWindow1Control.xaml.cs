@@ -438,6 +438,8 @@ namespace CodeMap
             parser.MemberName = "";
         }
 
+        public event EventHandler BookmarkMenuClick;
+
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (codeMapList.SelectedItem is MemberInfo info && sender is MenuItem menuItem)
@@ -456,6 +458,7 @@ namespace CodeMap
                         BookmarksStore.Store(docFile, info.Id, info.ColorContext);
                     }
                     _ = Task.Run(BookmarksStore.Save);
+                    BookmarkMenuClick?.Invoke(this, null);
                 }
                 catch
                 {
