@@ -1,3 +1,14 @@
+Release v2.2.2.0
+- Bookmarks marks on editors vertical scrollbar (courtesy of @vsopko)
+- Added page in the IDE options dialog for editing the extension settings
+- Styling context menu to respect IDE theme
+- Issue #18: Bookmarks cleaning problem
+
+Release v2.2.1.0
+- Issue #18: Bookmarks cleaning problem
+  restyling of bookmarks visual and overall layout refactoring
+  Special thanks to @vsopko for contributing to this release.
+
 Release v2.2.0.0
 - Issue #16: Local methods, colored bookmarks, filter for structs 
   Implemented tree map bookmarks

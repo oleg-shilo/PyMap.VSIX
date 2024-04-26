@@ -82,8 +82,6 @@ namespace CodeMap
             }
         }
 
-        // bool enabled = true;
-
         public bool Enabled
         {
             get

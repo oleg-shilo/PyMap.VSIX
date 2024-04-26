@@ -12,7 +12,7 @@ namespace CodeMap
     {
         [Category("Appearance options")]
         [DisplayName("Show Bookmarks on Margin")]
-        [Description("Render the bookmarks on the document margin. Changing this setting will take effect after the code map is regenerated.")]
+        [Description("Render the bookmarks on the document margin. Changing this setting will take effect after the code map is regenerated (e.g. document saved).")]
         public bool ShowBookmarkMarginProp
         {
             get { return Settings.Instance.ShowBookmarkMargin; }
