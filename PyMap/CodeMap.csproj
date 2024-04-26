@@ -53,6 +53,9 @@
     <Compile Include="CodeMapPackage.cs" />
     <Compile Include="Mappers\PythonMapper.cs" />
     <Compile Include="Mappers\SyntaxParser.cs" />
+    <Compile Include="Settings.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ToolWindow1.cs" />
     <Compile Include="ToolWindow1Command.cs" />
     <Compile Include="ToolWindow1Control.xaml.cs">

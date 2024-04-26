@@ -161,41 +161,31 @@ namespace CodeMap
 
         bool initialized = false;
 
-        static string settingsFile
-        {
-            get
-            {
-                if (!File.Exists(_settingsFile))
-                {
-                    string settings_dir = Path.GetDirectoryName(_settingsFile);
-                    if (!Directory.Exists(settings_dir))
-                        Directory.CreateDirectory(settings_dir);
-
-                    if (File.Exists(_settingsFileOld))
-                    {
-                        File.Move(_settingsFileOld, _settingsFile);
-                        try { Directory.Delete(Path.GetDirectoryName(_settingsFileOld), true); } catch { }
-                    }
-                    else
-                    {
-                        File.WriteAllText(_settingsFile, "");
-                    }
-                }
-                return _settingsFile;
-            }
-        }
-
-        static string _settingsFileOld = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PyMap.2022.VSIX", "settings.dat");
-        static string _settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CodeMap.2022.VSIX", "settings.dat");
-
         void SaveSettings()
         {
             try
             {
                 if (initialized)
                 {
-                    string data = SerializeSettings();
-                    File.WriteAllText(settingsFile, data);
+                    // pump date from VM to V
+                    // TODO: need to automate the property exchange
+
+                    Settings.Instance.FontSize = codeMapList.FontSize;
+                    Settings.Instance.Classes = parser.Classes;
+                    Settings.Instance.Interfaces = parser.Interfaces;
+                    Settings.Instance.Structs = parser.Structs;
+                    Settings.Instance.Others = parser.Others;
+                    Settings.Instance.PublicMethods = parser.PublicMethods;
+                    Settings.Instance.PublicProperties = parser.PublicProperties;
+                    Settings.Instance.PublicFields = parser.PublicFields;
+                    Settings.Instance.PrivateMethods = parser.PrivateMethods;
+                    Settings.Instance.PrivateProperties = parser.PrivateProperties;
+                    Settings.Instance.PrivateFields = parser.PrivateFields;
+                    Settings.Instance.SortMembers = parser.SortMembers;
+                    Settings.Instance.AutoSynch = parser.AutoSynch;
+                    Settings.Instance.ShowMethodSignatures = parser.ShowMethodSignatures;
+
+                    Settings.Instance.Save();
                 }
             }
             catch { }
@@ -205,60 +195,24 @@ namespace CodeMap
         {
             try
             {
-                string data = File.ReadAllText(settingsFile);
-                ApplySettings(data);
+                Settings.Init();
+
+                // Settings.Instance.FontSize = codeMapList.FontSize;
+                // Settings.Instance.Classes = parser.Classes;
+                // Settings.Instance.Interfaces = parser.Interfaces;
+                // Settings.Instance.Structs = parser.Structs;
+                // Settings.Instance.Others = parser.Others;
+                // Settings.Instance.PublicMethods = parser.PublicMethods;
+                // Settings.Instance.PublicProperties = parser.PublicProperties;
+                // Settings.Instance.PublicFields = parser.PublicFields;
+                // Settings.Instance.PrivateMethods = parser.PrivateMethods;
+                // Settings.Instance.PrivateProperties = parser.PrivateProperties;
+                // Settings.Instance.PrivateFields = parser.PrivateFields;
+                // Settings.Instance.SortMembers = parser.SortMembers;
+                // Settings.Instance.AutoSynch = parser.AutoSynch;
+                // Settings.Instance.ShowMethodSignatures = parser.ShowMethodSignatures;
             }
             catch { }
-        }
-
-        // TODO: need to automate serialization
-        string SerializeSettings()
-        {
-            return $"FontSize:{codeMapList.FontSize}\n" +
-                   $"Classes:{parser.Classes}\n" +
-                   $"Interfaces:{parser.Interfaces}\n" +
-                   $"Structs:{parser.Structs}\n" +
-                   $"Others:{parser.Others}\n" +
-                   $"PublicMethods:{parser.PublicMethods}\n" +
-                   $"PublicProperties:{parser.PublicProperties}\n" +
-                   $"PublicFields:{parser.PublicFields}\n" +
-                   $"PrivateMethods:{parser.PrivateMethods}\n" +
-                   $"PrivateProperties:{parser.PrivateProperties}\n" +
-                   $"PrivateFields:{parser.PrivateFields}\n" +
-                   $"SortMembers:{parser.SortMembers}\n" +
-                   $"AutoSynch:{parser.AutoSynch}\n" +
-
-                   $"ShowMethodSignatures:{parser.ShowMethodSignatures}";
-        }
-
-        void ApplySettings(string settings)
-        {
-            var items = settings.Split('\n')
-                                .Select(x => x.Trim())
-                                .Where(x => !string.IsNullOrEmpty(x))
-                                .Select(x =>
-                                {
-                                    var parts = x.Split(':');
-                                    return new { Key = parts[0], Value = parts[1] };
-                                });
-
-            foreach (var item in items)
-            {
-                if (item.Key == "PublicFields") parser.PublicFields = bool.Parse(item.Value);
-                else if (item.Key == "PublicProperties") parser.PublicProperties = bool.Parse(item.Value);
-                else if (item.Key == "PublicMethods") parser.PublicMethods = bool.Parse(item.Value);
-                else if (item.Key == "Classes") parser.Classes = bool.Parse(item.Value);
-                else if (item.Key == "Interfaces") parser.Interfaces = bool.Parse(item.Value);
-                else if (item.Key == "Structs") parser.Structs = bool.Parse(item.Value);
-                else if (item.Key == "Others") parser.Others = bool.Parse(item.Value);
-                else if (item.Key == "PrivateProperties") parser.PrivateProperties = bool.Parse(item.Value);
-                else if (item.Key == "PrivateFields") parser.PrivateFields = bool.Parse(item.Value);
-                else if (item.Key == "PrivateMethods") parser.PrivateMethods = bool.Parse(item.Value);
-                else if (item.Key == "SortMembers") parser.SortMembers = bool.Parse(item.Value);
-                else if (item.Key == "ShowMethodSignatures") parser.ShowMethodSignatures = bool.Parse(item.Value);
-                else if (item.Key == "AutoSynch") parser.AutoSynch = bool.Parse(item.Value);
-                else if (item.Key == "FontSize" && double.TryParse(item.Value, out double new_size)) codeMapList.FontSize = new_size;
-            }
         }
 
         void Watcher_Changed(object sender, FileSystemEventArgs e)

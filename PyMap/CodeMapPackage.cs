@@ -28,6 +28,7 @@ namespace CodeMap
     [Guid(PyMapPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(ToolWindow1))]
+    [ProvideOptionPage(typeof(Options), "CodeMap", "Options", 0, 0, true)]
     public sealed class PyMapPackage : AsyncPackage
     {
         /// <summary>

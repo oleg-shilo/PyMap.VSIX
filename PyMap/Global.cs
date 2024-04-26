@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -224,45 +225,67 @@ namespace CodeMap
     {
         static Dictionary<string, Dictionary<string, string>> Items = new Dictionary<string, Dictionary<string, string>>();
 
-        public static void Purge()
+        public static void Purge(string documentName, IEnumerable<string> validBookmarks)
         {
-            Items.Keys.ToList()
-                .ForEach(x =>
+            lock (Items)
+            {
+                if (Items.ContainsKey(documentName))
                 {
-                    if (!File.Exists(x))
-                        Items.Remove(x);
-                    else if (!Items[x].Any())
-                        Items.Remove(x);
-                });
+                    var oldBookmarks = Items[documentName].Keys.Where(x => !validBookmarks.Contains(x)).ToList();
+
+                    oldBookmarks
+                        .ForEach(y => Items[documentName].Remove(y));
+                }
+
+                Items.Keys.ToList()
+                    .ForEach(doc =>
+                    {
+                        if (!File.Exists(doc))
+                            Items.Remove(doc);
+                        else if (!Items[doc].Any())
+                            Items.Remove(doc);
+                    });
+
+                Save();
+            }
         }
 
         public static void Store(string documentName, string bookmarkId, string bookmarkName)
         {
-            if (!string.IsNullOrEmpty(documentName))
+            lock (Items)
             {
-                if (!Items.ContainsKey(documentName))
-                    Items[documentName] = new Dictionary<string, string>();
+                if (!string.IsNullOrEmpty(documentName))
+                {
+                    if (!Items.ContainsKey(documentName))
+                        Items[documentName] = new Dictionary<string, string>();
 
-                if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
-                    Items[documentName].Remove(bookmarkId);
-                else
-                    Items[documentName][bookmarkId] = bookmarkName;
+                    if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
+                        Items[documentName].Remove(bookmarkId);
+                    else
+                        Items[documentName][bookmarkId] = bookmarkName;
+                }
             }
         }
 
         public static string Read(string documentName, string location)
         {
-            if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
-                if (Items[documentName].ContainsKey(location))
-                    return Items[documentName][location];
-            return null;
+            lock (Items)
+            {
+                if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
+                    if (Items[documentName].ContainsKey(location))
+                        return Items[documentName][location];
+                return null;
+            }
         }
 
         public static void Clear(string documentName)
         {
-            if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
+            lock (Items)
             {
-                Items.Remove(documentName);
+                if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
+                {
+                    Items.Remove(documentName);
+                }
             }
         }
 
@@ -283,12 +306,15 @@ namespace CodeMap
 
         public static void Save()
         {
-            try
+            lock (Items)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(bookmarksFile));
-                File.WriteAllText(bookmarksFile, JObject.FromObject(Items).ToString());
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(bookmarksFile));
+                    File.WriteAllText(bookmarksFile, JObject.FromObject(Items).ToString());
+                }
+                catch { }
             }
-            catch { }
         }
     }
 
@@ -302,8 +328,9 @@ namespace CodeMap
         }
 
         public string Parent = "";
+        public string ParentPath = "";
 
-        public string Id => $"{Parent}.{Content}.{MemberContext}.{Title}";
+        public string Id => $"{ParentPath}.{Content}.{MemberContext}.{Title}";
         public int Line { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";

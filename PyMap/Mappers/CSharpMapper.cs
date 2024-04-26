@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
@@ -52,6 +53,7 @@ class CSharpMapper
             .Select(x =>
                 new MemberInfo
                 {
+                    ParentPath = "global",
                     Line = x.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                     Column = x.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = "",
@@ -67,6 +69,7 @@ class CSharpMapper
             MemberInfo parent;
             map.Add(parent = new MemberInfo
             {
+                ParentPath = "global",
                 Line = 1,
                 Column = 1,
                 Title = "<global>",
@@ -86,6 +89,7 @@ class CSharpMapper
 
                 members.Add(new MemberInfo
                 {
+                    ParentPath = member.GetParentPath(),
                     Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                     Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = method.Identifier.Text,
@@ -108,6 +112,7 @@ class CSharpMapper
 
             map.Add(new MemberInfo
             {
+                ParentPath = type.GetParentPath(),
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
@@ -122,6 +127,7 @@ class CSharpMapper
 
             map.Add(parent = new MemberInfo
             {
+                ParentPath = type.GetParentPath(),
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
@@ -162,7 +168,7 @@ class CSharpMapper
 
                     info = new MemberInfo
                     {
-                        Parent = parent.Title,
+                        Parent = type.GetParentPath(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
@@ -183,6 +189,7 @@ class CSharpMapper
 
                     info = new MemberInfo
                     {
+                        ParentPath = member.GetParentPath(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
@@ -198,6 +205,7 @@ class CSharpMapper
                     var prop = (member as PropertyDeclarationSyntax);
                     info = new MemberInfo
                     {
+                        ParentPath = member.GetParentPath(),
                         Line = prop.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = prop.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = prop.Identifier.ValueText,
@@ -212,6 +220,7 @@ class CSharpMapper
 
                     info = new MemberInfo
                     {
+                        ParentPath = member.GetParentPath(),
                         Line = field.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = field.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = field.Declaration.Variables.First().Identifier.Text,
@@ -223,7 +232,8 @@ class CSharpMapper
 
                 if (info != null)
                 {
-                    info.Parent = parent.Title;
+                    info.Parent = type.GetParentPath();
+                    // info.Parent = parent.Title;
                     members.Add(info);
                 }
             }
@@ -269,6 +279,30 @@ class CSharpMapper
 
 static class Extensions
 {
+    public static string GetParentPath(this SyntaxNode type)
+    {
+        var statements = new List<string>();
+
+        var parent = type.Parent;
+
+        while (parent != null)
+        {
+            if (parent is NamespaceDeclarationSyntax ns)
+                statements.Add(ns.Name.ToString());
+
+            if (parent is FileScopedNamespaceDeclarationSyntax fsns)
+                statements.Add(fsns.Name.ToString());
+
+            if (parent is TypeDeclarationSyntax ts)
+                statements.Add(ts.ToString());
+
+            parent = parent.Parent;
+        }
+
+        statements.Reverse();
+        return string.Join(".", statements);
+    }
+
     public static string Deflate(this string text)
-        => string.Join(" ", text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
+           => string.Join(" ", text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
 }

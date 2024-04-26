@@ -1,20 +1,22 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text.Editor;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text.Editor;
 
 namespace CodeMap
 {
     internal class BookmarkMargin : Canvas, IWpfTextViewMargin
     {
         private bool _isDisposed;
+
         private static double
             _lineWidth = 200,
             _lineHeight = 5;
+
         private static byte _opacity = 0x50;
         private readonly IVerticalScrollBar _scrollBar;
         private readonly Dictionary<string, Brush> _palette;
@@ -67,7 +69,7 @@ namespace CodeMap
             }
         }
 
-        #endregion
+        #endregion IWpfTextViewMargin
 
         #region ITextViewMargin
 
@@ -80,12 +82,20 @@ namespace CodeMap
             }
         }
 
+        // bool enabled = true;
+
         public bool Enabled
         {
             get
             {
                 ThrowIfDisposed();
-                return true;
+                return Settings.Instance.ShowBookmarkMargin;
+            }
+
+            set
+            {
+                ThrowIfDisposed();
+                Settings.Instance.ShowBookmarkMargin = value;
             }
         }
 
@@ -103,7 +113,7 @@ namespace CodeMap
             }
         }
 
-        #endregion
+        #endregion ITextViewMargin
 
         private void ThrowIfDisposed()
         {
@@ -116,7 +126,8 @@ namespace CodeMap
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            DrawMarkers(drawingContext);
+            if (Settings.Instance.ShowBookmarkMargin)
+                DrawMarkers(drawingContext);
         }
 
         void DrawMarkers(DrawingContext drawingContext)

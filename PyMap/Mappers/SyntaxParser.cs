@@ -8,6 +8,7 @@ namespace CodeMap
     using System.ComponentModel;
     using System.IO;
     using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows.Media.Imaging;
 
     public struct MyStruct
@@ -47,35 +48,22 @@ namespace CodeMap
 
         public ObservableCollection<MemberInfo> MemberList { get; set; } = new ObservableCollection<MemberInfo>();
 
-        bool interfaces = true;
-        bool classes = true;
-        bool structs = true;
-        bool others = true;
-        bool privateFields = true;
-        bool publicFields = true;
-        bool privateProperties = true;
-        bool publicProperties = true;
-        bool publicMethods = true;
-        bool privateMethods = true;
-        bool sortMembers = true;
         string className;
         string memberName;
-        bool autoSynch;
-        bool showMethodSignatures = true;
 
         public bool ShowMethodSignatures
         {
-            get => showMethodSignatures; set { showMethodSignatures = value; OnPropertyChanged(nameof(ShowMethodSignatures)); }
+            get => Settings.Instance.ShowMethodSignatures; set { Settings.Instance.ShowMethodSignatures = value; OnPropertyChanged(nameof(ShowMethodSignatures)); }
         }
 
         public bool AutoSynch
         {
-            get => autoSynch; set { autoSynch = value; OnPropertyChanged(nameof(AutoSynch)); }
+            get => Settings.Instance.AutoSynch; set { Settings.Instance.AutoSynch = value; OnPropertyChanged(nameof(AutoSynch)); }
         }
 
         public bool SortMembers
         {
-            get => sortMembers; set { sortMembers = value; OnPropertyChanged(nameof(SortMembers)); }
+            get => Settings.Instance.SortMembers; set { Settings.Instance.SortMembers = value; OnPropertyChanged(nameof(SortMembers)); }
         }
 
         public string MemberName
@@ -90,52 +78,52 @@ namespace CodeMap
 
         public bool PublicFields
         {
-            get => publicFields; set { publicFields = value; OnPropertyChanged(nameof(PublicFields)); }
+            get => Settings.Instance.PublicFields; set { Settings.Instance.PublicFields = value; OnPropertyChanged(nameof(PublicFields)); }
         }
 
         public bool PrivateProperties
         {
-            get => privateProperties; set { privateProperties = value; OnPropertyChanged(nameof(PrivateProperties)); }
+            get => Settings.Instance.PrivateProperties; set { Settings.Instance.PrivateProperties = value; OnPropertyChanged(nameof(PrivateProperties)); }
         }
 
         public bool PublicProperties
         {
-            get => publicProperties; set { publicProperties = value; OnPropertyChanged(nameof(PublicProperties)); }
+            get => Settings.Instance.PublicProperties; set { Settings.Instance.PublicProperties = value; OnPropertyChanged(nameof(PublicProperties)); }
         }
 
         public bool PublicMethods
         {
-            get => publicMethods; set { publicMethods = value; OnPropertyChanged(nameof(PublicMethods)); }
+            get => Settings.Instance.PublicMethods; set { Settings.Instance.PublicMethods = value; OnPropertyChanged(nameof(PublicMethods)); }
         }
 
         public bool PrivateMethods
         {
-            get => privateMethods; set { privateMethods = value; OnPropertyChanged(nameof(PrivateMethods)); }
+            get => Settings.Instance.PrivateMethods; set { Settings.Instance.PrivateMethods = value; OnPropertyChanged(nameof(PrivateMethods)); }
         }
 
         public bool PrivateFields
         {
-            get => privateFields; set { privateFields = value; OnPropertyChanged(nameof(PrivateFields)); }
+            get => Settings.Instance.PrivateFields; set { Settings.Instance.PrivateFields = value; OnPropertyChanged(nameof(PrivateFields)); }
         }
 
         public bool Structs
         {
-            get => structs; set { structs = value; OnPropertyChanged(nameof(Structs)); }
+            get => Settings.Instance.Structs; set { Settings.Instance.Structs = value; OnPropertyChanged(nameof(Structs)); }
         }
 
         public bool Others
         {
-            get => others; set { others = value; OnPropertyChanged(nameof(Others)); }
+            get => Settings.Instance.Others; set { Settings.Instance.Others = value; OnPropertyChanged(nameof(Others)); }
         }
 
         public bool Classes
         {
-            get => classes; set { classes = value; OnPropertyChanged(nameof(Classes)); }
+            get => Settings.Instance.Classes; set { Settings.Instance.Classes = value; OnPropertyChanged(nameof(Classes)); }
         }
 
         public bool Interfaces
         {
-            get => interfaces; set { interfaces = value; OnPropertyChanged(nameof(Interfaces)); }
+            get => Settings.Instance.Interfaces; set { Settings.Instance.Interfaces = value; OnPropertyChanged(nameof(Interfaces)); }
         }
 
         bool isCSharp = true;
@@ -322,6 +310,8 @@ namespace CodeMap
                             MemberList.Add(member);
                         }
                     }
+
+                    _ = Task.Run(() => BookmarksStore.Purge(file, items.Select(x => x.Id)));
 
                     ErrorMessage = null;
 
