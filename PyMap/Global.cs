@@ -327,16 +327,17 @@ namespace CodeMap
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public string Parent = "";
+        // public string Parent = "";
         public string ParentPath = "";
 
-        public string Id => $"{ParentPath}.{Content}.{MemberContext}.{Title}";
+        public string Id => $"{ParentPath}.{Content}.{MethodParameters ?? MemberContext}.{Title}";
         public int Line { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";
         public string MemberContext { set; get; } = "";
         public string Title { set; get; } = "";
+        public string MethodParameters { set; get; } = null;
 
         string colorContext;
         public string ColorContext { get => colorContext; set { colorContext = value; OnPropertyChanged(nameof(ColorContext)); } }
@@ -426,7 +427,7 @@ namespace CodeMap
         public SolidColorBrush Bookmark4 { get; set; } = Brushes.LightPink;
 
         static SolidColorBrush LightYellow = new SolidColorBrush(Color.FromRgb(245, 204, 132));
-        static SolidColorBrush NoBookmark = new SolidColorBrush(Color.FromArgb(1, 255, 255, 255));
+        static SolidColorBrush NoBookmark = new SolidColorBrush(Color.FromArgb(0, 255, 255, 255));
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
