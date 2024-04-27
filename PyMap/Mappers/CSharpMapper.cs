@@ -14,8 +14,6 @@ class CSharpMapper
 {
     public static IEnumerable<MemberInfo> Generate(string file, bool showMethodParams)
     {
-        var map = new List<MemberInfo>();
-
         string code;
 
         int lineOffset = 0;
@@ -31,6 +29,13 @@ class CSharpMapper
         }
         else
             code = File.ReadAllText(file);
+
+        return GenerateForCode(code, showMethodParams);
+    }
+
+    public static IEnumerable<MemberInfo> GenerateForCode(string code, bool showMethodParams, int lineOffset = 0)
+    {
+        var map = new List<MemberInfo>();
 
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
 
@@ -123,9 +128,7 @@ class CSharpMapper
 
         foreach (TypeDeclarationSyntax type in types)
         {
-            MemberInfo parent;
-
-            map.Add(parent = new MemberInfo
+            var parent = new MemberInfo
             {
                 ParentPath = type.GetParentPath(),
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
@@ -135,7 +138,9 @@ class CSharpMapper
                 Children = new List<MemberInfo>(),
 
                 MemberContext = ": " + type.Kind().ToString().Replace("Declaration", "").ToLower()
-            });
+            };
+
+            map.Add(parent);
 
             if (parent.MemberContext == ": class")
             {
@@ -162,17 +167,16 @@ class CSharpMapper
                 {
                     var method = (member as MethodDeclarationSyntax);
 
-                    var paramList = showMethodParams ?
-                        method.ParameterList.Parameters.ToString().Deflate() :
-                        "...";
+                    var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
                     info = new MemberInfo
                     {
-                        Parent = type.GetParentPath(),
+                        ParentPath = type.GetParentPath(),
+                        MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
-                        MemberContext = "(" + paramList + ")",
+                        MemberContext = "(" + (showMethodParams ? paramList : "...") + ")",
                         ContentType = "    ",
                         Children = new List<MemberInfo>(),
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
@@ -183,20 +187,19 @@ class CSharpMapper
                 {
                     var method = (member as ConstructorDeclarationSyntax);
 
-                    var paramList = showMethodParams ?
-                        method.ParameterList.Parameters.ToString().Deflate() :
-                        "...";
+                    var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
                     info = new MemberInfo
                     {
                         ParentPath = member.GetParentPath(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                        MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
                         IsPublic = method.Modifiers.Any(x => x.ValueText == "public" || x.ValueText == "internal"),
                         ContentType = "    ",
                         Children = new List<MemberInfo>(),
-                        MemberContext = "(" + paramList + ")",
+                        MemberContext = "(" + (showMethodParams ? paramList : "...") + ")",
                         MemberType = MemberType.Constructor
                     };
                 }
@@ -232,8 +235,7 @@ class CSharpMapper
 
                 if (info != null)
                 {
-                    info.Parent = type.GetParentPath();
-                    // info.Parent = parent.Title;
+                    info.ParentPath = type.GetParentPath();
                     members.Add(info);
                 }
             }
