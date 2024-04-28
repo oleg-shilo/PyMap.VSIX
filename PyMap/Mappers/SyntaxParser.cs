@@ -311,7 +311,13 @@ namespace CodeMap
                         }
                     }
 
-                    _ = Task.Run(() => BookmarksStore.Purge(file, items.Select(x => x.Id)));
+                    // `items` is a list of all root level MemberInfo objects where which item has only one level
+                    // of nesting: item.Children of `MemberInfo` type.
+                    // Flattening the list of all items and their children to capture the all current bookmarks
+
+                    var currentFileBookmarks = items.Concat(items.SelectMany(x => x.Children)).Select(x => x.Id).ToArray();
+
+                    _ = Task.Run(() => BookmarksStore.Purge(file, currentFileBookmarks));
 
                     ErrorMessage = null;
 
