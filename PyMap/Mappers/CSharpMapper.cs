@@ -58,7 +58,7 @@ class CSharpMapper
             .Select(x =>
                 new MemberInfo
                 {
-                    ParentPath = "global",
+                    ParentPath = "",
                     Line = x.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                     Column = x.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = "",
@@ -74,7 +74,7 @@ class CSharpMapper
             MemberInfo parent;
             map.Add(parent = new MemberInfo
             {
-                ParentPath = "global",
+                ParentPath = "",
                 Line = 1,
                 Column = 1,
                 Title = "<global>",
@@ -171,7 +171,7 @@ class CSharpMapper
 
                     info = new MemberInfo
                     {
-                        ParentPath = type.GetParentPath(),
+                        ParentPath = member.GetParentPath(),
                         MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -235,7 +235,8 @@ class CSharpMapper
 
                 if (info != null)
                 {
-                    info.ParentPath = type.GetParentPath();
+                    if (!info.ParentPath.Any())
+                        info.ParentPath = type.GetParentPath();
                     members.Add(info);
                 }
             }
@@ -296,7 +297,8 @@ static class Extensions
                 statements.Add(fsns.Name.ToString());
 
             if (parent is TypeDeclarationSyntax ts)
-                statements.Add(ts.ToString());
+                statements.Add(ts.Identifier.Text);
+            // statements.Add(ts.ToString());
 
             parent = parent.Parent;
         }

@@ -3,42 +3,83 @@ namespace CodeMap.Test
     public class GenericTests
     {
         [Fact]
-        public void AllMembersHaveDistinctIds()
+        public void CanGenerateProperItemIds()
         {
             var code = """
 
                 using System;
 
-                class Program
+                void RootMethod(){}
+
+                namespace AppNamespace;
+
+                class RootClass
                 {
-                    static void Main()
+                    RootClass() {}
+
+                    void Foo1() {}
+                    void Foo1(int arg) {}
+
+                    class NestedClass
                     {
-                        Console.WriteLine(""Hello, World!"");
+                        void NestedFoo1() {}
                     }
 
-                    int Test()
+                #region NestedTypesRegion
+
+                    enum NestedEnum
                     {
-                        return 0;
+                        EnumValue1,
                     }
 
-                    int Test(int arg)
+                #region NestedStructRegion
+
+                    struct NestedStruct
                     {
-                        return 0;
+                        void NestedFoo() {}
                     }
 
-                    int Test(int arg, int arg2)
+                #endregion NestedStructRegion
+
+                    interface NestedInterface
                     {
-                        return 0;
+                        void NestedFoo();
                     }
+
+                #endregion NestedTypesRegion
+
+                    event EventHandler NestedEvent;
+
+                    int Property1 { get; set; }
+
+                    int field1;
                 }
-
                 """;
 
             var map = CSharpMapper.GenerateForCode(code, false);
 
-            var idList = map.SelectMany(x => x.Children).Select(x => x.Id);
+            var items = map.Select(x => x).Concat(map.SelectMany(x => x.Children))
+                .Select(x => new { x.Id, Item = x }).ToArray();
 
-            Assert.Equal(4, idList.Distinct().Count());
+            var idList = items.Select(x => x.Id).ToArray();
+
+            Assert.Contains(".<global>", idList);
+            Assert.Contains(".RootMethod()", idList);
+            Assert.Contains(".region: NestedTypesRegion", idList);
+            Assert.Contains(".region: NestedStructRegion", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedEnum", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedClass", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedStruct", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedInterface", idList);
+            Assert.Contains("AppNamespace.RootClass", idList);
+            Assert.Contains("AppNamespace.RootClass.RootClass()", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedClass.NestedFoo1()", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedStruct.NestedFoo()", idList);
+            Assert.Contains("AppNamespace.RootClass.NestedInterface.NestedFoo()", idList);
+            Assert.Contains("AppNamespace.RootClass.Foo1()", idList);
+            Assert.Contains("AppNamespace.RootClass.Foo1(int arg)", idList);
+            Assert.Contains("AppNamespace.RootClass.Property1", idList);
+            Assert.Contains("AppNamespace.RootClass.field1", idList);
         }
     }
 }

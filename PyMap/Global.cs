@@ -330,7 +330,35 @@ namespace CodeMap
         // public string Parent = "";
         public string ParentPath = "";
 
-        public string Id => $"{ParentPath}.{Content}.{MethodParameters ?? MemberContext}.{Title}";
+        public string Id
+        {
+            get
+            {
+                switch (MemberType)
+                {
+                    case MemberType.Interface:
+                    case MemberType.Class:
+                    case MemberType.Struct:
+                    case MemberType.Type:
+                        return $"{ParentPath}.{Title}";
+
+                    case MemberType.Constructor:
+                    case MemberType.Method:
+                        return $"{ParentPath}.{Content}({MethodParameters})";
+
+                    case MemberType.Property:
+                    case MemberType.Field:
+                        return $"{ParentPath}.{Content}";
+
+                    case MemberType.Region:
+                        return $"{ParentPath}.{MemberContext}";
+
+                    default:
+                        return Guid.NewGuid().ToString(); // giving up here
+                }
+            }
+        }
+
         public int Line { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
