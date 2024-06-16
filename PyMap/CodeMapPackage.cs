@@ -52,7 +52,10 @@ namespace CodeMap
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             await ToolWindow1Command.InitializeAsync(this);
+            PyMapPackage.GetService = base.GetService;
         }
+
+        static public new Func<Type, object> GetService;
 
         #endregion Package Members
     }

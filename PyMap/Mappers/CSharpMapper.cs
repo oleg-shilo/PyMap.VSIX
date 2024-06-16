@@ -8,7 +8,55 @@ using System.Windows.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
 using CodeMap;
+
+static class Ide
+{
+    public static string GetActiveDocumentText()
+    {
+        try
+        {
+            var txtMgr = (IVsTextManager)PyMapPackage.GetService(typeof(SVsTextManager));
+            IWpfTextView textView = txtMgr.GetTextView();
+
+            var code = textView.TextBuffer.CurrentSnapshot.GetText();
+
+            return code;
+        }
+        catch { }
+        return null;
+    }
+
+    static public IWpfTextView GetTextView(this IVsTextManager txtMgr)
+    {
+        return txtMgr.GetViewHost().TextView;
+    }
+
+    static public IWpfTextViewHost GetViewHost(this IVsTextManager txtMgr)
+    {
+        object holder;
+        Guid guidViewHost = DefGuidList.guidIWpfTextViewHost;
+        txtMgr.GetUserData().GetData(ref guidViewHost, out holder);
+        return (IWpfTextViewHost)holder;
+    }
+
+    public static IVsUserData GetUserData(this IVsTextManager txtMgr)
+    {
+        int mustHaveFocus = 1;//means true
+        IVsTextView currentTextView;
+        txtMgr.GetActiveView(mustHaveFocus, null, out currentTextView);
+
+        if (currentTextView is IVsUserData)
+            return currentTextView as IVsUserData;
+        else
+            throw new ApplicationException("No text view is currently open");
+        // Console.WriteLine("No text view is currently open"); return;
+    }
+}
 
 class CSharpMapper
 {
@@ -30,12 +78,18 @@ class CSharpMapper
         else
             code = File.ReadAllText(file);
 
+        if (string.IsNullOrEmpty(code))
+            code = Ide.GetActiveDocumentText(); // if file is empty, try to get the active document text
+
         return GenerateForCode(code, showMethodParams);
     }
 
     public static IEnumerable<MemberInfo> GenerateForCode(string code, bool showMethodParams, int lineOffset = 0)
     {
         var map = new List<MemberInfo>();
+
+        if (string.IsNullOrEmpty(code))
+            return map;
 
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
 
