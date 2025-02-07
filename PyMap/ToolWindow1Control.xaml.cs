@@ -45,6 +45,8 @@ namespace CodeMap
         SyntaxParser parser = new SyntaxParser();
         FileSystemWatcher watcher = new FileSystemWatcher();
         DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
+        DispatcherTimer dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Control"/> class.
