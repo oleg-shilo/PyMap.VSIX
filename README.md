@@ -28,7 +28,7 @@ Well, it is different. While there are some very solid tools of this sort availa
 
 - CodeMap on the other hand has only one objective - navigation. Usability of code navigation, if to be more precise. CodeMap is trying not to stay on your way and to do only a single job but to do it well and most ergonomically.
 
-As a developer, when I want to jump to the code where a certain algorithm is implemented. I am interested in the location of the code in the file and I want to get there in a single step. I am not interested so many things that are important in general but irrelevant right now:
+As a developer, when I want to jump to the code where a certain algorithm is implemented. I am interested in the location of the code in the file and I want to get there in a single step. I am not interested in so many things that are important in general but irrelevant right now:
 
 - what is the return type of my method
 - is it static or not
@@ -42,18 +42,18 @@ When I use a code map to navigate to the code:
 - I am not interested in collapsing code tree nodes for the not-important classes and then doing it again and again simply because I have switched between the code files.
 - I do not want to do refactoring (moving members around) from CodeMap. I have better tools for that.
 - I do not want to explore relationships between a code element and its callers. I have better tools for that (e.g. Find All References).
-- I do not want to be limited with my code tree visualization for the current solution files only. Even if the file does not belong to the solution (e.g. decompiled source on F12 - 'Go To Definition') I also wand to be able to navigate in this file freely.
+- I do not want to be limited with my code tree visualization for the current solution files only. Even if the file does not belong to the solution (e.g. decompiled source on F12 - 'Go To Definition') I also want to be able to navigate in this file freely.
 
 One may ask "Why then not just allow the extra flexibility in some of the existing products, instead of maintaining 'yet another one'?". This is where it becomes more complicated.
 
-I have contacted the owner of CodeMaid and tried to contribute some of this flexibility to the excellent CodeMaid. I did it twice. But my PRs were not accepted. I am not complaining as every OpenSource product author is entitled to have his/her vision of the product evolution. Even if the proposed changes are not about changing the product but only about extra customization. Thus I have taken my older extension and improved it to meet my own and hopefully other people's expectations. And of course, I am fully open to suggestions regarding the extension functionality.
+I have contacted the owner of CodeMaid and tried to contribute some of this flexibility to the excellent CodeMaid. I did it twice. But my PRs were not accepted. I am not complaining. Every OpenSource product author is entitled to have his/her vision of the product evolution. Even if the proposed changes are not about changing the product but only about extra customization. Thus I have taken my older extension and improved it to meet my own and hopefully other people's expectations. And of course, I am fully open to suggestions regarding the extension functionality.
 
 ### CodeMap - C# (or .razor)
 
 ![](docs/Preview.png)
 
 You can filter code tree content by the class or member name.
-You can control inclusion of the members by their visibility (private/public) for methods, properties and fields.
+You can control the inclusion of the members by their visibility (private/public) for methods, properties and fields.
 You can choose to sort members of the class.
 
 ### CodeMap - Python
