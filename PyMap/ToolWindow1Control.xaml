@@ -268,6 +268,12 @@
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Padding" Value="1" />
                     <Setter Property="Background" Value="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}" />
+                    <!--  works well but not sure that stilistically it makes sense  -->
+                    <!--<Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+                    </Style.Triggers>-->
                 </Style>
             </ListBox.ItemContainerStyle>
 
