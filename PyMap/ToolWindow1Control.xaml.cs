@@ -47,7 +47,6 @@ namespace CodeMap
         DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
         DispatcherTimer dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Control"/> class.
         /// </summary>
@@ -148,7 +147,8 @@ namespace CodeMap
                 NavigateToSelectedMember();
 
             // if the selection is changed, the scroll position should be changed to the default position.
-            // This is to avoid jumps to most right when the member signature is too wide.
+            // This is to avoid jumps to most right when the member signature is too wide
+
             _ = Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 codeMapList.FindChild<ScrollViewer>()?.ScrollToHorizontalOffset(0);
@@ -247,6 +247,11 @@ namespace CodeMap
                         RefreshMap(true);
                         lastSelectedItem = codeMapList.SelectedItem;
                     }
+                }
+                else
+                {
+                    docFile = null;
+                    parser.Clear();
                 }
             }
             catch (Exception ex)
