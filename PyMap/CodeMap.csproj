@@ -49,6 +49,8 @@
     <Compile Include="BookmarkMarginFactory.cs" />
     <Compile Include="Mappers\CSharpMapper.cs" />
     <Compile Include="Global.cs" />
+    <Compile Include="Mappers\CssMapper.cs" />
+    <Compile Include="Mappers\JavaScriptMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CodeMapPackage.cs" />
     <Compile Include="Mappers\PythonMapper.cs" />
@@ -83,6 +85,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Esprima">
+      <Version>3.0.5</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp">
       <Version>4.3.1</Version>
     </PackageReference>

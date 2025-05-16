@@ -1,3 +1,9 @@
+Release v2.2.4.0
+- #23: Clear code map when file is closed
+
+Release v2.2.3.0
+- Added support for mapping the document that has no content in the file (auto-generated files)
+
 Release v2.2.2.0
 - Bookmarks marks on editors vertical scrollbar (courtesy of @vsopko)
 - Added page in the IDE options dialog for editing the extension settings

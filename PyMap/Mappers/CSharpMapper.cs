@@ -81,7 +81,7 @@ class CSharpMapper
         if (string.IsNullOrEmpty(code))
             code = Ide.GetActiveDocumentText(); // if file is empty, try to get the active document text
 
-        return GenerateForCode(code, showMethodParams);
+        return GenerateForCode(code, showMethodParams, lineOffset);
     }
 
     public static IEnumerable<MemberInfo> GenerateForCode(string code, bool showMethodParams, int lineOffset = 0)

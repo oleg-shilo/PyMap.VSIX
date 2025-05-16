@@ -173,6 +173,8 @@ namespace CodeMap
             mappers.Add(".razor", CSharpMapper.Generate);
             mappers.Add(".py", PythonMapper.Generate);
             mappers.Add(".pyw", PythonMapper.Generate);
+            mappers.Add(".css", CssMapper.Generate);
+            mappers.Add(".js", JavaScriptMapper.Generate);
         }
 
         public void GenerateMap(string file)
