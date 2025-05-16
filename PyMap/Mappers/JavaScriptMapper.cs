@@ -8,11 +8,11 @@ using CodeMap;
 using Esprima;
 using Esprima.Ast;
 
-class JavaScriptMapper
+static class JavaScriptMapper
 {
     public static IEnumerable<MemberInfo> Generate(string file, bool showMethodParams)
     {
-        return Generate(File.ReadAllLines(file), showMethodParams);
+        return Generate(File.ReadAllLines(file), showMethodParams).Structure();
         // return GenerateWithEsPrima(file, showMethodParams);
     }
 
@@ -39,6 +39,23 @@ class JavaScriptMapper
 
     // window.property.property = function() {
     static Regex winPropFunc = new Regex(@"window\.([\w\.]+)\s*=\s*function\s*\(([^)]*)\)", RegexOptions.Compiled);
+
+    static string ParentLineOf(string[] code, int childIndex)
+    {
+        // calculate child line indent and find nearest line with a lesser indent above the child line
+        var childIndent = code[childIndex].GetIndent();
+
+        for (int i = childIndex - 1; i >= 0; i--)
+        {
+            if (code[i].Length > 0)
+            {
+                var currentIndent = code[i].GetIndent();
+                if (currentIndent < childIndent)
+                    return code[i];
+            }
+        }
+        return null;
+    }
 
     public static IEnumerable<MemberInfo> Generate(string[] code, bool showMethodParams)
     {
@@ -101,13 +118,28 @@ class JavaScriptMapper
                 continue;
             }
 
-            name = name.Split('.').Last();
+            // name = name.Split('.').Last();
+
+            // var contentIndent = new string(' ', (code[i].Length - line.Length));
+            var parent = ParentLineOf(code, i);
+            if (parent != null)
+            {
+                name = parent.Split('=').First()
+                    .Replace("window.", "")
+                    .Replace("export", "")
+                    .Replace("public", "")
+                    .Replace("static", "")
+                    .Replace("class ", "")
+                    .Replace("{", "")
+                    .Replace("(", "")
+                    .Trim() + "." + name;
+            }
 
             var info = new MemberInfo();
             info.Line = i;
-            var contentIndent = new string(' ', (code[i].Length - line.Length));
 
             info.ParentPath = "";
+            info.Name = name;
             info.MemberContext = "";
             info.MemberType = MemberType.Method;
 
@@ -118,6 +150,43 @@ class JavaScriptMapper
             map.Add(info);
         }
         return map;
+    }
+
+    public static IEnumerable<MemberInfo> Structure(this IEnumerable<MemberInfo> map)
+    {
+        var all = map.ToList();
+        var roots = new List<MemberInfo>();
+
+        foreach (var item in all)
+        {
+            var content = item.Name;
+            var lastDot = content.LastIndexOf('.');
+            if (lastDot > 0)
+            {
+                var parentPath = content.Substring(0, lastDot);
+
+                // find or create parentInfo in roots
+                var parent = roots.FirstOrDefault(x => x.Name == parentPath);
+                if (parent == null)
+                    roots.Add(parent = new MemberInfo
+                    {
+                        Name = parentPath,
+                        MemberType = MemberType.Class,
+                        Content = parentPath,
+                        ParentPath = "",
+                        Line = item.Line
+                    });
+
+                parent.Children.Add(item);
+                item.ParentPath = parentPath;
+                item.Content = item.Content.Substring(parentPath.Length).TrimStart('.');
+                item.ContentType = "    "; // will create the indent in the tree for children display
+                continue;
+            }
+            else
+                roots.Add(item); // If no parent found, it's a root node
+        }
+        return roots;
     }
 
     public static IEnumerable<MemberInfo> GenerateWithEsPrima(string file, bool showMethodParams)

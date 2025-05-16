@@ -9,7 +9,7 @@
         <ReleaseNotes>changelog.txt</ReleaseNotes>
         <Icon>package.ico</Icon>
         <PreviewImage>Preview.png</PreviewImage>
-        <Tags>python, csharp, C#, editor, code, navigation, pymap, codemap</Tags>
+        <Tags>python, csharp, C#, JS, CSS, JavaScript, editor, code, navigation, pymap, codemap</Tags>
         <Preview>false</Preview>
     </Metadata>
     <Installation>

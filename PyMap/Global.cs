@@ -42,6 +42,8 @@ namespace CodeMap
             return (T)GetService(typeof(T));
         }
 
+        public static int GetIndent(this string text) => text.Length - text.TrimStart().Length;
+
         public static int Brightness(this Color color)
         {
             return (color.R + color.R + color.R + color.B + color.G + color.G + color.G + color.G) >> 3;
@@ -327,7 +329,7 @@ namespace CodeMap
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // public string Parent = "";
+        public string Name = "";
         public string ParentPath = "";
 
         public string Id

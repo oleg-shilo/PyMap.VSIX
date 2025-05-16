@@ -1,3 +1,6 @@
+Release v2.3.0.0
+- Added CSS and JavaScript mappers
+
 Release v2.2.4.0
 - #23: Clear code map when file is closed
 
