@@ -40,6 +40,11 @@ static class JavaScriptMapper
     // window.property.property = function() {
     static Regex winPropFunc = new Regex(@"window\.([\w\.]+)\s*=\s*function\s*\(([^)]*)\)", RegexOptions.Compiled);
 
+    // TypeScript class method: read_all_lines(file: string): string[] {
+    // static Regex tsClassMethod = new Regex(@"^(\w+)\s*\(([^)]*)\)\s*:\s*[\w\[\]\<\>\|]+(\s*\[\])?\s*{", RegexOptions.Compiled);
+    static Regex tsClassMethod = new Regex(@"^(?:\s*(?:public|private|protected|static|async)\s+)*(\w+)\s*\(([^)]*)\)\s*:\s*[\w\[\]\<\>\|]+(\s*\[\])?\s*{",
+    RegexOptions.Compiled);
+
     static string ParentLineOf(string[] code, int childIndex)
     {
         // calculate child line indent and find nearest line with a lesser indent above the child line
@@ -94,6 +99,11 @@ static class JavaScriptMapper
             // Exclude control flow keywords before matching class methods
             else if (!controlKeywords.Contains(line.Split(" (".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "") &&
                      (match = classMethod.Match(line)).Success)
+            {
+                name = match.Groups[1].Value;
+                invokeParams = "(" + match.Groups[2].Value + ")";
+            }
+            else if ((match = tsClassMethod.Match(line)).Success)
             {
                 name = match.Groups[1].Value;
                 invokeParams = "(" + match.Groups[2].Value + ")";

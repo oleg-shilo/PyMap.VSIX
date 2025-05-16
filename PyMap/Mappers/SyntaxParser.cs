@@ -175,6 +175,7 @@ namespace CodeMap
             mappers.Add(".pyw", PythonMapper.Generate);
             mappers.Add(".css", CssMapper.Generate);
             mappers.Add(".js", JavaScriptMapper.Generate);
+            mappers.Add(".ts", JavaScriptMapper.Generate);
         }
 
         public void GenerateMap(string file)
