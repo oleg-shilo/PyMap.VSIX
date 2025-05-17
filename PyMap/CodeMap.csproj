@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="BookmarkMargin.cs" />
     <Compile Include="BookmarkMarginFactory.cs" />
+    <Compile Include="DropPositionAdorner.cs" />
     <Compile Include="Mappers\CSharpMapper.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Mappers\CssMapper.cs" />

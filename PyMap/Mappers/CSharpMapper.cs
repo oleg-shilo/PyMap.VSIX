@@ -114,6 +114,7 @@ class CSharpMapper
                 {
                     ParentPath = "",
                     Line = x.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                    EndLine = x.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                     Column = x.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = "",
                     MemberContext = "region: " + x.ToString().Replace("#region", "").Trim() + "",
@@ -130,6 +131,7 @@ class CSharpMapper
             {
                 ParentPath = "",
                 Line = 1,
+                EndLine = 1,
                 Column = 1,
                 Title = "<global>",
                 Children = new List<MemberInfo>(),
@@ -150,6 +152,7 @@ class CSharpMapper
                 {
                     ParentPath = member.GetParentPath(),
                     Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                    EndLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                     Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = method.Identifier.Text,
                     MemberContext = "(" + paramList + ")",
@@ -173,6 +176,7 @@ class CSharpMapper
             {
                 ParentPath = type.GetParentPath(),
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                EndLine = type.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
                 MemberContext = ": enum",
@@ -186,6 +190,7 @@ class CSharpMapper
             {
                 ParentPath = type.GetParentPath(),
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                EndLine = type.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
                 Title = type.Identifier.Text,
                 MemberType = MemberType.Type,
@@ -228,6 +233,7 @@ class CSharpMapper
                         ParentPath = member.GetParentPath(),
                         MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                        EndLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
                         MemberContext = "(" + (showMethodParams ? paramList : "...") + ")",
@@ -247,6 +253,7 @@ class CSharpMapper
                     {
                         ParentPath = member.GetParentPath(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                        EndLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
                         Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = method.Identifier.Text,
@@ -264,6 +271,7 @@ class CSharpMapper
                     {
                         ParentPath = member.GetParentPath(),
                         Line = prop.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                        EndLine = prop.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         Column = prop.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = prop.Identifier.ValueText,
                         ContentType = "    ",
@@ -279,6 +287,7 @@ class CSharpMapper
                     {
                         ParentPath = member.GetParentPath(),
                         Line = field.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
+                        EndLine = field.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         Column = field.GetLocation().GetLineSpan().StartLinePosition.Character,
                         Content = field.Declaration.Variables.First().Identifier.Text,
                         ContentType = "    ",

@@ -167,11 +167,17 @@
             Grid.Row="1"
             HorizontalContentAlignment="Stretch"
             d:ItemsSource="{d:SampleData ItemCount=5}"
+            AllowDrop="True"
             Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
             BorderBrush="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarBorderKey}}"
             BorderThickness="0,0,0,1"
+            DragOver="codeMapList_DragOver"
+            Drop="codeMapList_Drop"
             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
             ItemsSource="{Binding MemberList}"
+            PreviewDragOver="codeMapList_PreviewDragOver"
+            PreviewMouseLeftButtonDown="codeMapList_PreviewMouseLeftButtonDown"
+            PreviewMouseMove="codeMapList_PreviewMouseMove"
             PreviewMouseWheel="codeMapList_PreviewMouseWheel">
             <ListBox.ContextMenu>
                 <ContextMenu
@@ -282,7 +288,9 @@
                     <Border
                         MinHeight="0"
                         HorizontalAlignment="Stretch"
-                        Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}">
+                        Background="{Binding ColorContext, Converter={StaticResource BookmarkToBackgroundConverter}}"
+                        PreviewDragEnter="Border_PreviewDragEnter"
+                        PreviewDragOver="Border_PreviewDragOver">
 
                         <StackPanel Margin="0,-2" Orientation="Horizontal">
 

@@ -362,6 +362,7 @@ namespace CodeMap
         }
 
         public int Line { set; get; } = -1;
+        public int EndLine { set; get; } = -1;
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";

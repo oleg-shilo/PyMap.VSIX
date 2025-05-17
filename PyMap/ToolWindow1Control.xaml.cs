@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 // using System.Windows.Forms;
 using System.Windows.Input;
@@ -35,6 +36,11 @@ namespace CodeMap
     /// </summary>
     public partial class ToolWindow1Control : UserControl
     {
+        Point _dragStartPoint;
+        object _draggedItem;
+        AdornerLayer _adornerLayer;
+        DropPositionAdorner _dropAdorner;
+
         static ToolWindow1Control Instance;
 
         CommandEvents commandEvents;
@@ -424,6 +430,214 @@ namespace CodeMap
                 catch
                 {
                 }
+            }
+        }
+
+        void codeMapList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (parser.SortMembers || !parser.IsCSharp)
+            {
+                _draggedItem = null;
+                return;
+            }
+            _dragStartPoint = e.GetPosition(null);
+            var item = GetListBoxItemAt(e.GetPosition(codeMapList));
+            _draggedItem = item?.DataContext;
+        }
+
+        void codeMapList_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (parser.SortMembers || !parser.IsCSharp)
+                return;
+
+            if (e.LeftButton == MouseButtonState.Pressed && _draggedItem != null)
+            {
+                var pos = e.GetPosition(null);
+                if (Math.Abs(pos.X - _dragStartPoint.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(pos.Y - _dragStartPoint.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    DragDrop.DoDragDrop(codeMapList, _draggedItem, DragDropEffects.Move);
+                }
+            }
+        }
+
+        void codeMapList_DragOver(object sender, DragEventArgs e)
+        {
+            var pos = e.GetPosition(codeMapList);
+            int insertIndex = GetInsertIndex(pos);
+
+            if (_adornerLayer == null)
+                _adornerLayer = AdornerLayer.GetAdornerLayer(codeMapList);
+
+            RemoveDropAdorner();
+
+            // prevent dragging over if the document is not C# or razor file
+            if (!parser.CanParse(docFile) || !parser.IsCSharp)
+            {
+                e.Effects = DragDropEffects.None;
+                Mouse.SetCursor(Cursors.None);
+                return;
+            }
+
+            _dropAdorner = new DropPositionAdorner(codeMapList, insertIndex);
+            _adornerLayer.Add(_dropAdorner);
+
+            e.Effects = DragDropEffects.Move;
+            e.Handled = true;
+            Mouse.SetCursor(Cursors.Arrow);
+        }
+
+        void codeMapList_Drop(object sender, DragEventArgs e)
+        {
+            RemoveDropAdorner();
+
+            var pos = e.GetPosition(codeMapList);
+            int insertIndex = GetInsertIndex(pos);
+
+            var items = codeMapList.ItemsSource as System.Collections.IList;
+
+            // MemberInfo src = _draggedItem as MemberInfo;
+            MemberInfo src = e.Data.GetData(typeof(MemberInfo)) as MemberInfo;
+            MemberInfo dest = items[insertIndex] as MemberInfo;
+
+            if (items != null && src != null)
+            {
+                if (src != null && dest != null && src != dest && !(insertIndex > 0 && items[insertIndex - 1] == src))
+                {
+                    // Debug.WriteLine($"Source: {src.Id} -> Dest: above {dest.Id}; ");
+                    MoveDocumentRegionInEditor(src.Line, src.EndLine, dest.Line);
+                    try
+                    {
+                        dte.ActiveDocument.Save();
+                    }
+                    catch { }
+
+                    // cannot call RefreshMap as it will use the file to read the code not the dte
+                    // so Refresh will be called by the file watcher
+                    // RefreshMap(true);
+
+                    // should be done in the background on the refresh
+                    // int oldIndex = items.IndexOf(src);
+                    // if (oldIndex >= 0)
+                    // {
+                    //     items.RemoveAt(oldIndex);
+                    //     if (insertIndex > oldIndex) insertIndex--;
+                    // }
+
+                    // items.Insert(insertIndex, src);
+                }
+            }
+
+            e.Handled = true;
+        }
+
+        void RemoveDropAdorner()
+        {
+            if (_dropAdorner != null && _adornerLayer != null)
+            {
+                _adornerLayer.Remove(_dropAdorner);
+                _dropAdorner = null;
+            }
+        }
+
+        ListBoxItem GetListBoxItemAt(Point position)
+        {
+            var element = codeMapList.InputHitTest(position) as DependencyObject;
+            while (element != null && !(element is ListBoxItem))
+                element = VisualTreeHelper.GetParent(element);
+            return element as ListBoxItem;
+        }
+
+        int GetInsertIndex(Point position)
+        {
+            for (int i = 0; i < codeMapList.Items.Count; i++)
+            {
+                var item = codeMapList.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
+                if (item != null)
+                {
+                    var bounds = VisualTreeHelper.GetDescendantBounds(item);
+                    var topLeft = item.TranslatePoint(new Point(0, 0), codeMapList);
+                    if (position.Y < topLeft.Y + bounds.Height / 2)
+                        return i;
+                }
+            }
+            return codeMapList.Items.Count;
+        }
+
+        private void codeMapList_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            // Always allow move, even in the gap between items
+            // if (e.Data.GetDataPresent(typeof(MemberInfo)))
+            e.Effects = DragDropEffects.Move;
+            // else
+            // e.Effects = DragDropEffects.None;
+
+            // e.Handled = true;
+        }
+
+        private void Border_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move;
+        }
+
+        private void Border_PreviewDragEnter(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move;
+        }
+
+        void MoveDocumentRegionInEditor(int startLine, int endLine, int insertBeforeLine)
+        {
+            IWpfTextView textView = Global.GetTextView();
+            ITextSnapshot snapshot = textView.TextSnapshot;
+            ITextBuffer buffer = snapshot.TextBuffer;
+
+            // Validate input
+            if (startLine < 0 || endLine >= snapshot.LineCount || startLine > endLine)
+                throw new ArgumentOutOfRangeException("Invalid start or end line.");
+            if (insertBeforeLine < 0 || insertBeforeLine > snapshot.LineCount)
+                throw new ArgumentOutOfRangeException("Invalid insertBeforeLine.");
+
+            // Extend endLine to include any empty lines after the original endLine
+            int lastLine = snapshot.LineCount - 1;
+            int extendedEndLine = endLine;
+            while (extendedEndLine < lastLine)
+            {
+                var nextLine = snapshot.GetLineFromLineNumber(extendedEndLine + 1);
+                if (string.IsNullOrWhiteSpace(nextLine.GetText()))
+                    extendedEndLine++;
+                else
+                    break;
+            }
+
+            // Get the region text
+            var startLineObj = snapshot.GetLineFromLineNumber(startLine);
+            var endLineObj = snapshot.GetLineFromLineNumber(extendedEndLine);
+            int regionStart = startLineObj.Start.Position;
+            int regionEnd = endLineObj.EndIncludingLineBreak.Position;
+            string regionText = snapshot.GetText(regionStart, regionEnd - regionStart);
+
+            // Remove the region
+            using (var edit = buffer.CreateEdit())
+            {
+                edit.Delete(regionStart, regionEnd - regionStart);
+                edit.Apply();
+            }
+
+            // After removal, recalculate the insert position
+            snapshot = buffer.CurrentSnapshot;
+            int newInsertLine = insertBeforeLine;
+            if (insertBeforeLine > extendedEndLine)
+                newInsertLine -= (extendedEndLine - startLine + 1);
+
+            int insertPos = (newInsertLine < snapshot.LineCount)
+                ? snapshot.GetLineFromLineNumber(newInsertLine).Start.Position
+                : snapshot.Length;
+
+            // Insert the region
+            using (var edit = buffer.CreateEdit())
+            {
+                edit.Insert(insertPos, regionText);
+                edit.Apply();
             }
         }
     }
