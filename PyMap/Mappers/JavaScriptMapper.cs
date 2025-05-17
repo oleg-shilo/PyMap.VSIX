@@ -134,15 +134,15 @@ static class JavaScriptMapper
             var parent = ParentLineOf(code, i);
             if (parent != null)
             {
-                name = parent.Split('=').First()
+                var parentTitle = parent.Split('=').First()
                     .Replace("window.", "")
                     .Replace("export", "")
                     .Replace("public", "")
                     .Replace("static", "")
                     .Replace("class ", "")
-                    .Replace("{", "")
-                    .Replace("(", "")
-                    .Trim() + "." + name;
+                    .Replace("{", "");
+                parentTitle = parentTitle.Split('(').First().Trim();
+                name = parentTitle + "." + name;
             }
 
             var info = new MemberInfo();

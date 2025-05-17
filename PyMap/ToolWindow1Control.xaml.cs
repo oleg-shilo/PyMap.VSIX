@@ -435,7 +435,7 @@ namespace CodeMap
 
         void codeMapList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (parser.SortMembers || !parser.IsCSharp)
+            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers)
             {
                 _draggedItem = null;
                 return;
@@ -447,7 +447,7 @@ namespace CodeMap
 
         void codeMapList_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (parser.SortMembers || !parser.IsCSharp)
+            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers)
                 return;
 
             if (e.LeftButton == MouseButtonState.Pressed && _draggedItem != null)
@@ -577,12 +577,20 @@ namespace CodeMap
 
         private void Border_PreviewDragOver(object sender, DragEventArgs e)
         {
-            e.Effects = DragDropEffects.Move;
+            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers)
+                e.Effects = DragDropEffects.None;
+            else
+                e.Effects = DragDropEffects.Move;
+            e.Handled = true;
         }
 
         private void Border_PreviewDragEnter(object sender, DragEventArgs e)
         {
-            e.Effects = DragDropEffects.Move;
+            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers)
+                e.Effects = DragDropEffects.None;
+            else
+                e.Effects = DragDropEffects.Move;
+            e.Handled = true;
         }
 
         void MoveDocumentRegionInEditor(int startLine, int endLine, int insertBeforeLine)

@@ -159,6 +159,9 @@ namespace CodeMap
 
         public bool CanParse(string file)
         {
+            if (string.IsNullOrEmpty(file))
+                return false;
+
             var fileType = Path.GetExtension(file).ToLower();
             IsCSharp = (fileType == ".cs" || fileType == ".razor");
 
