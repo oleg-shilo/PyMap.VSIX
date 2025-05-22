@@ -348,10 +348,21 @@ namespace CodeMap
 
     public class AppImages
     {
-        public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource PublicOverlay => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource Clear => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.clear.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.clear.png".LoadAsEmbeddedResourceImage());
-        public static BitmapSource Filter => (ExtensionHost.IsDarkTheme ? "CodeMap.Resources.icons.dark.filter.png".LoadAsEmbeddedResourceImage() : "CodeMap.Resources.icons.light.filter.png".LoadAsEmbeddedResourceImage());
+        static BitmapSource _privateOverlayDark => "CodeMap.Resources.icons.dark.private.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _privateOverlayLight => "CodeMap.Resources.icons.light.private.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _publicOverlayDark => "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _publicOverlayLight => "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _synchDark => "CodeMap.Resources.icons.dark.synch.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _synchLight => "CodeMap.Resources.icons.light.synch.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _clearDark => "CodeMap.Resources.icons.dark.clear.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _clearLight => "CodeMap.Resources.icons.light.clear.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _filterDark => "CodeMap.Resources.icons.dark.filter.png".LoadAsEmbeddedResourceImage();
+        static BitmapSource _filterLight => "CodeMap.Resources.icons.light.filter.png".LoadAsEmbeddedResourceImage();
+
+        public static BitmapSource PrivateOverlay => (ExtensionHost.IsDarkTheme ? _privateOverlayDark : _privateOverlayLight);
+        public static BitmapSource PublicOverlay => (ExtensionHost.IsDarkTheme ? _publicOverlayDark : _publicOverlayLight);
+        public static BitmapSource Synch => (ExtensionHost.IsDarkTheme ? _synchDark : _synchLight);
+        public static BitmapSource Clear => (ExtensionHost.IsDarkTheme ? _clearDark : _clearLight);
+        public static BitmapSource Filter => (ExtensionHost.IsDarkTheme ? _filterDark : _filterLight);
     }
 }

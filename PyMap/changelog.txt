@@ -1,3 +1,6 @@
+Release v2.3.2.0
+- Fixed DarkTheme issue with theme not being detected at startup correctly
+
 Release v2.3.1.0
 - Added TypeScript mapper
 - Implemented manual reordering tree items ad document regions with drag-n-drop (for C# syntax only).

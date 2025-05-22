@@ -17,7 +17,7 @@ _Code Tree viewer for source code._
 Supported Language Syntax:
 - C#
 - Python
-- JavaScript
+- JavaScript/TypeScript
 - CSS
 
 Historically, this extension was created to address the absence of the code tree/map view functionality for "Python Tools for Visual Studio" (PTVS). Thus, some users can remember this tool by the name of PyMap. Starting from v2.0 it has been extended with the support for C# and has been renamed into CodeMap.

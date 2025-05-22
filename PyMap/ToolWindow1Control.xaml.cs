@@ -82,7 +82,7 @@ namespace CodeMap
             watcher.Renamed += Watcher_Changed;
 
             timer.Tick += (x, y) => CheckIfThemeChanged();
-            timer.Interval = TimeSpan.FromSeconds(2);
+            timer.Interval = TimeSpan.FromSeconds(3);
             timer.Start();
 
             ReadSettings();
@@ -92,6 +92,25 @@ namespace CodeMap
             parser.MapInvalidated += () => RefreshMap(force: true);
 
             initialized = true;
+
+            this.Loaded += (s, e) =>
+            {
+                // with VS Version 17.14.0 something has changed and the theme is not detected correctly at startup even
+                // though the theme is set correctly in the IDE.
+                // So we need to do a manual push to the parser to set the correct theme. For 10 seconds or so.
+                Task.Run(() =>
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        Task.Delay(1000).Wait();
+                        Dispatcher.CurrentDispatcher.Invoke(parser.OnThemChange);
+                    }
+                });
+            };
+        }
+
+        void MyToolWindow_Loaded(object sender, RoutedEventArgs e)
+        {
         }
 
         object lastSelectedItem;
@@ -138,6 +157,10 @@ namespace CodeMap
 
                     parser.OnThemChange();
                     RefreshMap(true);
+                }
+                else
+                {
+                    // parser.OnThemChange();
                 }
             }
             catch { }
@@ -386,6 +409,7 @@ namespace CodeMap
             try
             {
                 var currLine = Global.GetTextView().Selection.Start.Position.GetContainingLineNumber();
+
                 var correspondingMember = this.parser.MemberList.OrderBy(x => x.Line).TakeWhile(x => x.Line <= currLine).LastOrDefault();
 
                 if (codeMapList.SelectedItem != correspondingMember)
