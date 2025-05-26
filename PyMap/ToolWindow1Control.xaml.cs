@@ -459,7 +459,8 @@ namespace CodeMap
 
         void codeMapList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers)
+            // Only allow drag if Ctrl is pressed and all other conditions are met
+            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers || (Keyboard.Modifiers & ModifierKeys.Control) == 0)
             {
                 _draggedItem = null;
                 return;
@@ -471,7 +472,8 @@ namespace CodeMap
 
         void codeMapList_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers)
+            // Only allow drag if Ctrl is pressed and all other conditions are met
+            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers || (Keyboard.Modifiers & ModifierKeys.Control) == 0)
                 return;
 
             if (e.LeftButton == MouseButtonState.Pressed && _draggedItem != null)
@@ -487,72 +489,84 @@ namespace CodeMap
 
         void codeMapList_DragOver(object sender, DragEventArgs e)
         {
-            var pos = e.GetPosition(codeMapList);
-            int insertIndex = GetInsertIndex(pos);
-
-            if (_adornerLayer == null)
-                _adornerLayer = AdornerLayer.GetAdornerLayer(codeMapList);
-
-            RemoveDropAdorner();
-
-            // prevent dragging over if the document is not C# or razor file
-            if (!parser.CanParse(docFile) || !parser.IsCSharp)
+            try
             {
-                e.Effects = DragDropEffects.None;
-                Mouse.SetCursor(Cursors.None);
-                return;
+                var pos = e.GetPosition(codeMapList);
+                int insertIndex = GetInsertIndex(pos);
+
+                if (_adornerLayer == null)
+                    _adornerLayer = AdornerLayer.GetAdornerLayer(codeMapList);
+
+                RemoveDropAdorner();
+
+                // prevent dragging over if the document is not C# or razor file
+                if (!parser.CanParse(docFile) || !parser.IsCSharp)
+                {
+                    e.Effects = DragDropEffects.None;
+                    Mouse.SetCursor(Cursors.None);
+                    return;
+                }
+
+                _dropAdorner = new DropPositionAdorner(codeMapList, insertIndex);
+                _adornerLayer.Add(_dropAdorner);
+
+                e.Effects = DragDropEffects.Move;
+                e.Handled = true;
+                Mouse.SetCursor(Cursors.Arrow);
             }
-
-            _dropAdorner = new DropPositionAdorner(codeMapList, insertIndex);
-            _adornerLayer.Add(_dropAdorner);
-
-            e.Effects = DragDropEffects.Move;
-            e.Handled = true;
-            Mouse.SetCursor(Cursors.Arrow);
+            catch (Exception)
+            {
+            }
         }
 
         void codeMapList_Drop(object sender, DragEventArgs e)
         {
-            RemoveDropAdorner();
-
-            var pos = e.GetPosition(codeMapList);
-            int insertIndex = GetInsertIndex(pos);
-
-            var items = codeMapList.ItemsSource as System.Collections.IList;
-
-            // MemberInfo src = _draggedItem as MemberInfo;
-            MemberInfo src = e.Data.GetData(typeof(MemberInfo)) as MemberInfo;
-            MemberInfo dest = items[insertIndex] as MemberInfo;
-
-            if (items != null && src != null)
+            try
             {
-                if (src != null && dest != null && src != dest && !(insertIndex > 0 && items[insertIndex - 1] == src))
+                RemoveDropAdorner();
+
+                var pos = e.GetPosition(codeMapList);
+                int insertIndex = GetInsertIndex(pos);
+
+                var items = codeMapList.ItemsSource as System.Collections.IList;
+
+                // MemberInfo src = _draggedItem as MemberInfo;
+                MemberInfo src = e.Data.GetData(typeof(MemberInfo)) as MemberInfo;
+                MemberInfo dest = items[insertIndex] as MemberInfo;
+
+                if (items != null && src != null)
                 {
-                    // Debug.WriteLine($"Source: {src.Id} -> Dest: above {dest.Id}; ");
-                    MoveDocumentRegionInEditor(src.Line, src.EndLine, dest.Line);
-                    try
+                    if (src != null && dest != null && src != dest && !(insertIndex > 0 && items[insertIndex - 1] == src))
                     {
-                        dte.ActiveDocument.Save();
+                        // Debug.WriteLine($"Source: {src.Id} -> Dest: above {dest.Id}; ");
+                        MoveDocumentRegionInEditor(src.Line, src.EndLine, dest.Line);
+                        try
+                        {
+                            dte.ActiveDocument.Save();
+                        }
+                        catch { }
+
+                        // cannot call RefreshMap as it will use the file to read the code not the dte
+                        // so Refresh will be called by the file watcher
+                        // RefreshMap(true);
+
+                        // should be done in the background on the refresh
+                        // int oldIndex = items.IndexOf(src);
+                        // if (oldIndex >= 0)
+                        // {
+                        //     items.RemoveAt(oldIndex);
+                        //     if (insertIndex > oldIndex) insertIndex--;
+                        // }
+
+                        // items.Insert(insertIndex, src);
                     }
-                    catch { }
-
-                    // cannot call RefreshMap as it will use the file to read the code not the dte
-                    // so Refresh will be called by the file watcher
-                    // RefreshMap(true);
-
-                    // should be done in the background on the refresh
-                    // int oldIndex = items.IndexOf(src);
-                    // if (oldIndex >= 0)
-                    // {
-                    //     items.RemoveAt(oldIndex);
-                    //     if (insertIndex > oldIndex) insertIndex--;
-                    // }
-
-                    // items.Insert(insertIndex, src);
                 }
-            }
 
-            e.Handled = true;
+                e.Handled = true;
+            }
+            catch (Exception)
+            {
+            }
         }
 
         void RemoveDropAdorner()

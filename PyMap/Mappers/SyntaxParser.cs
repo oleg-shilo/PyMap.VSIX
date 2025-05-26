@@ -41,9 +41,13 @@ namespace CodeMap
 
         public void OnThemChange()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SynchIcon)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClearIcon)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterIcon)));
+            try
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SynchIcon)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClearIcon)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterIcon)));
+            }
+            catch { }
         }
 
         public ObservableCollection<MemberInfo> MemberList { get; set; } = new ObservableCollection<MemberInfo>();

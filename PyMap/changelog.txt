@@ -1,3 +1,6 @@
+Release v2.3.3.0
+- Allow drag-n-drop treeview items only if Ctrl key is pressed.
+
 Release v2.3.2.0
 - Fixed DarkTheme issue with theme not being detected at startup correctly
 
