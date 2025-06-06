@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,12 +15,14 @@ using System.Windows.Media;
 // using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Outlining;
 using Microsoft.VisualStudio.TextManager.Interop;
 using EnvDTE;
 using EnvDTE80;
@@ -36,6 +39,9 @@ namespace CodeMap
     /// </summary>
     public partial class ToolWindow1Control : UserControl
     {
+        [Import]
+        internal IOutliningManagerService OutliningManagerService { get; set; }
+
         Point _dragStartPoint;
         object _draggedItem;
         AdornerLayer _adornerLayer;
@@ -65,6 +71,10 @@ namespace CodeMap
             this.InitializeComponent();
 
             this.DataContext = this.parser;
+            // Compose MEF parts
+
+            var componentModel = (IComponentModel)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SComponentModel));
+            componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
 
             // any changes in IDE should trigger checking if the active doc is pointing to a different file and the map needs to regenerated
             this.dte = Global.GetDTE2();
@@ -298,23 +308,38 @@ namespace CodeMap
             try
             {
                 var info = codeMapList.SelectedItem as MemberInfo;
-                if (info != null)
+                if (info != null && info.Line != -1)
                 {
-                    if (info.Line != -1)
+                    IWpfTextView textView = Global.GetTextView();
+
+                    // Unfold any collapsed region containing the target line
+                    var outliningManagerService = this.OutliningManagerService;
+
+                    if (outliningManagerService != null)
                     {
-                        IWpfTextView textView = Global.GetTextView();
-                        textView.MoveCaretToLine(info.Line);
-                        textView.SelectLine(info.Line);
+                        var outliningManager = outliningManagerService.GetOutliningManager(textView);
+                        if (outliningManager != null)
+                        {
+                            var snapshot = textView.TextSnapshot;
+                            var line = snapshot.GetLineFromLineNumber(info.Line);
+                            var regions = outliningManager.GetAllRegions(new SnapshotSpan(line.Start, line.End));
+                            foreach (var region in regions)
+                            {
+                                if (region.IsCollapsed && region is ICollapsed collapsed)
+                                {
+                                    outliningManager.Expand(collapsed);
+                                }
+                            }
+                        }
                     }
+
+                    textView.MoveCaretToLine(info.Line);
+                    textView.SelectLine(info.Line);
                 }
             }
             catch (Exception)
             {
                 // the system may not be ready yet
-                // and throw even for the already loaded file
-                // Saving document seems to be a good reset for the IDE
-                // parser.ErrorMessage = ex.Message;
-
                 if ((Environment.TickCount - lastAutoRecover) > 1000)
                 {
                     lastAutoRecover = Environment.TickCount;

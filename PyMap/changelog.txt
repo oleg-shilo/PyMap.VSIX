@@ -1,3 +1,6 @@
+Release v2.3.4.0
+- Issue #24: Enhancement - item click navigate auto expands class/region 
+
 Release v2.3.3.0
 - Allow drag-n-drop treeview items only if Ctrl key is pressed.
 
