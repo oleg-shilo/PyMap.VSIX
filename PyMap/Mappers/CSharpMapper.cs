@@ -311,11 +311,13 @@ class CSharpMapper
             parent.Children = members.ToList();
         }
 
+        var orderedMap = map.OrderBy(x => x.Line).ToList();
+
         foreach (var region in regions)
         {
             var inserted = false;
 
-            foreach (var type in map.ToArray())
+            foreach (var type in orderedMap)
             {
                 if (region.Line < type.Line)
                 {

@@ -43,12 +43,20 @@ namespace CodeMap
 
             _parser.PropertyChanged += (s, e) =>
             {
-                InvalidateVisual();
+                try
+                {
+                    InvalidateVisual();
+                }
+                catch { }
             };
 
             control.BookmarkMenuClick += (s, e) =>
             {
-                InvalidateVisual();
+                try
+                {
+                    InvalidateVisual();
+                }
+                catch { }
             };
         }
 

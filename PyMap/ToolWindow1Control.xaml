@@ -418,6 +418,7 @@
                     Click="SettingsChanged"
                     Content="Classes"
                     IsChecked="{Binding Classes}"
+                    ToolTip="Show Classes"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
@@ -427,6 +428,7 @@
                     Click="SettingsChanged"
                     Content="Interfaces"
                     IsChecked="{Binding Interfaces}"
+                    ToolTip="Show Interfaces"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <!--  ##########################################################  -->
 
@@ -437,6 +439,7 @@
                     Click="SettingsChanged"
                     Content="Structs"
                     IsChecked="{Binding Structs}"
+                    ToolTip="Show Structs"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
@@ -446,6 +449,7 @@
                     Click="SettingsChanged"
                     Content="Others"
                     IsChecked="{Binding Others}"
+                    ToolTip="Show any other types"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <!--  ##########################################################  -->
                 <TextBlock
@@ -461,6 +465,7 @@
                     Click="SettingsChanged"
                     Content="Public"
                     IsChecked="{Binding PublicMethods}"
+                    ToolTip="Show public methods"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
@@ -470,6 +475,7 @@
                     Click="SettingsChanged"
                     Content="Private"
                     IsChecked="{Binding PrivateMethods}"
+                    ToolTip="Show private methods"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <!--  ##########################################################  -->
                 <TextBlock
@@ -485,6 +491,7 @@
                     Click="SettingsChanged"
                     Content="Public"
                     IsChecked="{Binding PublicProperties}"
+                    ToolTip="Show public properties"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
@@ -494,6 +501,7 @@
                     Click="SettingsChanged"
                     Content="Private"
                     IsChecked="{Binding PrivateProperties}"
+                    ToolTip="Show private properties"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <!--  ##########################################################  -->
@@ -511,6 +519,7 @@
                     Click="SettingsChanged"
                     Content="Public"
                     IsChecked="{Binding PublicFields}"
+                    ToolTip="Show public fields"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
@@ -520,6 +529,7 @@
                     Click="SettingsChanged"
                     Content="Private"
                     IsChecked="{Binding PrivateFields}"
+                    ToolTip="Show private fields"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <CheckBox
@@ -529,7 +539,8 @@
                     Click="SettingsChanged"
                     Content="Sort"
                     IsChecked="{Binding SortMembers}"
-                    IsEnabled="True" />
+                    IsEnabled="True"
+                    ToolTip="Sort members" />
 
                 <CheckBox
                     x:Name="AutoSynch"
