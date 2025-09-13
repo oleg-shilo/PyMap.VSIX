@@ -193,6 +193,8 @@ namespace CodeMap
                 {
                     MemberList.Clear();
 
+                    var latestItems = new List<MemberInfo>();
+
                     var fileType = Path.GetExtension(file).ToLower();
                     var generateMap = mappers[fileType];
 
@@ -250,7 +252,7 @@ namespace CodeMap
                             || item.MemberType == MemberType.Type
                             || item.MemberType == MemberType.Struct)
                         {
-                            MemberList.Add(item);
+                            latestItems.Add(item);
                             children = item.Children;
                         }
                         else
@@ -264,7 +266,7 @@ namespace CodeMap
                             {
                                 // if (item.MemberType == MemberType.Region)
                                 // {
-                                //     MemberList.Add(item);
+                                //     latestItems.Add(item);
                                 // }
 
                                 var members = children.Where(x => x.MemberType == MemberType.Method || x.MemberType == MemberType.Constructor);
@@ -317,13 +319,21 @@ namespace CodeMap
                             if (bookmark != null)
                                 member.ColorContext = bookmark;
 
-                            MemberList.Add(member);
+                            latestItems.Add(member);
                         }
                     }
 
                     // `items` is a list of all root level MemberInfo objects where which item has only one level
                     // of nesting: item.Children of `MemberInfo` type.
                     // Flattening the list of all items and their children to capture the all current bookmarks
+
+                    if (!SortMembers)
+                    {
+                        latestItems = latestItems.OrderBy(x => x.Line).ToList();
+                    }
+
+                    foreach (var item in latestItems)
+                        MemberList.Add(item);
 
                     var currentFileBookmarks = items.Concat(items.SelectMany(x => x.Children)).Select(x => x.Id).ToArray();
 

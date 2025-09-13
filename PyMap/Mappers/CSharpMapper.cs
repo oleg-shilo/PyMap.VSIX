@@ -311,6 +311,16 @@ class CSharpMapper
             parent.Children = members.ToList();
         }
 
+        MemberInfo prev = null;
+        foreach (var m in map.ToArray())
+        {
+            var nestingCount = m.Id.Split('|').Last().Count(x => x == '.');
+            m.NestingLevel = new string(' ', 4 * nestingCount);
+            m.Children.ForEach(x => x.NestingLevel = m.NestingLevel);
+
+            prev = m;
+        }
+
         var orderedMap = map.OrderBy(x => x.Line).ToList();
 
         foreach (var region in regions)
@@ -349,27 +359,39 @@ static class Extensions
 {
     public static string GetParentPath(this SyntaxNode type)
     {
-        var statements = new List<string>();
+        var namespaces = new List<string>();
+        var types = new List<string>();
 
         var parent = type.Parent;
 
         while (parent != null)
         {
             if (parent is NamespaceDeclarationSyntax ns)
-                statements.Add(ns.Name.ToString());
+            {
+                namespaces.Add(ns.Name.ToString());
+            }
 
             if (parent is FileScopedNamespaceDeclarationSyntax fsns)
-                statements.Add(fsns.Name.ToString());
+            {
+                namespaces.Add(fsns.Name.ToString());
+            }
 
             if (parent is TypeDeclarationSyntax ts)
-                statements.Add(ts.Identifier.Text);
-            // statements.Add(ts.ToString());
+            {
+                types.Add(ts.Identifier.Text);
+            }
 
             parent = parent.Parent;
         }
 
-        statements.Reverse();
-        return string.Join(".", statements);
+        namespaces.Reverse();
+        types.Reverse();
+
+        string[] fullType = new[] { string.Join(".", namespaces), string.Join(".", types) };
+
+        var result = string.Join("|", fullType.Where(x => !string.IsNullOrEmpty(x)));
+
+        return result;
     }
 
     public static string Deflate(this string text)

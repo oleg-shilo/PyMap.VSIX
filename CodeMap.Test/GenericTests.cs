@@ -11,6 +11,10 @@ namespace CodeMap.Test
 
                 void RootMethod(){}
 
+                class NakedRootClass
+                {
+                }
+
                 namespace AppNamespace;
 
                 class RootClass
@@ -58,28 +62,30 @@ namespace CodeMap.Test
 
             var map = CSharpMapper.GenerateForCode(code, false);
 
-            var items = map.Select(x => x).Concat(map.SelectMany(x => x.Children))
+            var items = map
+                .Concat(map.SelectMany(x => x.Children))
                 .Select(x => new { x.Id, Item = x }).ToArray();
 
             var idList = items.Select(x => x.Id).ToArray();
 
-            Assert.Contains(".<global>", idList);
+            Assert.Contains("<global>", idList);
+            Assert.Contains("NakedRootClass", idList);
             Assert.Contains(".RootMethod()", idList);
             Assert.Contains(".region: NestedTypesRegion", idList);
             Assert.Contains(".region: NestedStructRegion", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedEnum", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedClass", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedStruct", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedInterface", idList);
-            Assert.Contains("AppNamespace.RootClass", idList);
-            Assert.Contains("AppNamespace.RootClass.RootClass()", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedClass.NestedFoo1()", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedStruct.NestedFoo()", idList);
-            Assert.Contains("AppNamespace.RootClass.NestedInterface.NestedFoo()", idList);
-            Assert.Contains("AppNamespace.RootClass.Foo1()", idList);
-            Assert.Contains("AppNamespace.RootClass.Foo1(int arg)", idList);
-            Assert.Contains("AppNamespace.RootClass.Property1", idList);
-            Assert.Contains("AppNamespace.RootClass.field1", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedEnum", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedClass", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedStruct", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedInterface", idList);
+            Assert.Contains("AppNamespace|RootClass", idList);
+            Assert.Contains("AppNamespace|RootClass.RootClass()", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedClass.NestedFoo1()", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedStruct.NestedFoo()", idList);
+            Assert.Contains("AppNamespace|RootClass.NestedInterface.NestedFoo()", idList);
+            Assert.Contains("AppNamespace|RootClass.Foo1()", idList);
+            Assert.Contains("AppNamespace|RootClass.Foo1(int arg)", idList);
+            Assert.Contains("AppNamespace|RootClass.Property1", idList);
+            Assert.Contains("AppNamespace|RootClass.field1", idList);
         }
     }
 }

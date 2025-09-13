@@ -336,13 +336,23 @@ namespace CodeMap
         {
             get
             {
+                var path = ParentPath;
                 switch (MemberType)
                 {
                     case MemberType.Interface:
                     case MemberType.Class:
                     case MemberType.Struct:
                     case MemberType.Type:
-                        return $"{ParentPath}.{Title}";
+                        {
+                            if (!ParentPath.Any())
+                                return Title; // global namespace
+                            else
+                            if (ParentPath.Count(x => x == '.') == 0 &&  // not nested
+                                ParentPath.Count(x => x == '|') == 0)    //
+                                return $"{ParentPath}|{Title}"; // ParentPath is a namespace
+                            else
+                                return $"{ParentPath}.{Title}";
+                        }
 
                     case MemberType.Constructor:
                     case MemberType.Method:
@@ -368,6 +378,8 @@ namespace CodeMap
         public string ContentType { set; get; } = "";
         public string MemberContext { set; get; } = "";
         public string Title { set; get; } = "";
+
+        public string NestingLevel { set; get; }
         public string MethodParameters { set; get; } = null;
 
         string colorContext;
