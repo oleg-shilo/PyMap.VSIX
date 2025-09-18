@@ -105,10 +105,10 @@ class CSharpMapper
                                 .Where(x => x.Statement.Kind() == SyntaxKind.LocalFunctionStatement)
                                 .OrderBy(x => x.FullSpan.End)
                                 .ToArray();
-
+        var regName = "";
         var regions = root
             .DescendantTrivia()
-            .Where(x => x.IsKind(SyntaxKind.RegionDirectiveTrivia))
+            .Where(x => x.IsKind(SyntaxKind.RegionDirectiveTrivia) || x.IsKind(SyntaxKind.EndRegionDirectiveTrivia))
             .Select(x =>
                 new MemberInfo
                 {
@@ -117,12 +117,32 @@ class CSharpMapper
                     EndLine = x.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                     Column = x.GetLocation().GetLineSpan().StartLinePosition.Character,
                     Content = "",
-                    MemberContext = "region: " + x.ToString().Replace("#region", "").Trim() + "",
+                    MemberContext = x.IsKind(SyntaxKind.RegionDirectiveTrivia) ?
+                    x.ToString().Replace("#region", "").Trim() :
+                    "",
+                    // "region: <end>",
                     ContentType = "",
                     IsPublic = true,
                     Children = new List<MemberInfo>(),
                     MemberType = MemberType.Region
                 }).ToArray();
+
+        // iterate through all regions and decorate them
+        var startedRegion = new Stack<string>();
+        foreach (var item in regions)
+        {
+            if (item.MemberContext.Any())
+            {
+                // start region line with the name of the region
+                startedRegion.Push(item.MemberContext);
+                item.MemberContext = $"<{item.MemberContext}>";
+            }
+            else
+            {
+                // end region line
+                item.MemberContext = $"</{startedRegion.Pop()}>";
+            }
+        }
 
         if (globalMethods.Any())
         {
@@ -314,8 +334,8 @@ class CSharpMapper
         MemberInfo prev = null;
         foreach (var m in map.ToArray())
         {
-            var nestingCount = m.Id.Split('|').Last().Count(x => x == '.');
-            m.NestingLevel = new string(' ', 4 * nestingCount);
+            // break;
+            m.NestingLevel = m.Id.Split('|').Last().Count(x => x == '.');
             m.Children.ForEach(x => x.NestingLevel = m.NestingLevel);
 
             prev = m;

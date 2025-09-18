@@ -299,7 +299,7 @@
                                     <Setter Property="FontSize" Value="{Binding ElementName=codeMapList, Path=FontSize, Converter={StaticResource IdeFontSizeToToolWindowsFontSizeConverter}}" />
                                 </Style>
                             </StackPanel.Resources>
-                            <TextBlock Foreground="{x:Null}" Text="{Binding NestingLevel}" />
+                            <TextBlock Foreground="{x:Null}" Text="{Binding NestingIndent}" />
                             <TextBlock Foreground="{x:Null}" Text="{Binding ContentType}" />
                             <Grid>
                                 <Image
@@ -312,9 +312,9 @@
                                     Source="{Binding AccessType}"
                                     Stretch="Uniform" />
                             </Grid>
+
                             <TextBlock
-                                Margin="5,0,5,0"
-                                Padding="2,0,3,0"
+                                Padding="1,0,3,0"
                                 VerticalAlignment="Center"
                                 Text="{Binding Content}"
                                 Visibility="{Binding Content, Converter={StaticResource TextLengthToVisibilityConverter}}">

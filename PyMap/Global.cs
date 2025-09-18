@@ -373,13 +373,17 @@ namespace CodeMap
 
         public int Line { set; get; } = -1;
         public int EndLine { set; get; } = -1;
+        public bool IsInRegion { set; get; }
         public int Column { set; get; } = -1;
         public string Content { set; get; } = "";
         public string ContentType { set; get; } = "";
         public string MemberContext { set; get; } = "";
         public string Title { set; get; } = "";
 
-        public string NestingLevel { set; get; }
+        public static string SingleIndent = "    ";
+        public int NestingLevel = 0;
+
+        public string NestingIndent => new string(' ', MemberInfo.SingleIndent.Length * NestingLevel);
         public string MethodParameters { set; get; } = null;
 
         string colorContext;
@@ -388,7 +392,7 @@ namespace CodeMap
 
         public MemberType MemberType { set; get; }
 
-        public List<MemberInfo> Children = new List<MemberInfo>();
+        public List<MemberInfo> Children = new List<MemberInfo>(); // used to store member nodes; though before rendering all items flattened as a plain list
 
         public BitmapSource TypeIcon => (ExtensionHost.IsDarkTheme ? MemberInfoImages.Dark : MemberInfoImages.Light)[MemberType];
 

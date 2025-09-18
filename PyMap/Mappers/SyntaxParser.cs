@@ -193,12 +193,18 @@ namespace CodeMap
                 {
                     MemberList.Clear();
 
-                    var latestItems = new List<MemberInfo>();
-
                     var fileType = Path.GetExtension(file).ToLower();
                     var generateMap = mappers[fileType];
 
+                    var latestItems = new List<MemberInfo>();
                     var items = generateMap(file, ShowMethodSignatures).OrderBy(x => x.Line);
+
+                    // flattening the hierarchy to show in the ListBox
+                    // if ByLine sorting is enabled then we can just sore all items after the list is created
+                    // if ByName then we need to sort types first and then members of the types
+
+                    if (SortMembers)
+                        items = items.OrderBy(x => x.Id);
 
                     foreach (MemberInfo item in items)
                     {
@@ -223,7 +229,9 @@ namespace CodeMap
                                 return true;
                         }
 
-                        var children = item.Children?.OrderBy(x => x.Line).ToList();
+                        var children = item.Children;
+                        if (SortMembers)
+                            children = children?.OrderBy(x => x.Line).ToList();
 
                         if (item.MemberType == MemberType.Class)
                         {
@@ -331,7 +339,10 @@ namespace CodeMap
                     {
                         latestItems = latestItems.OrderBy(x => x.Line).ToList();
                     }
-
+                    // else
+                    // {
+                    //     latestItems = latestItems.OrderByDescending(x => x.Id).ToList();
+                    // }
                     foreach (var item in latestItems)
                         MemberList.Add(item);
 
