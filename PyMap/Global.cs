@@ -63,6 +63,10 @@ namespace CodeMap
             return patterns.Any(x => text.StartsWith(x));
         }
 
+        public static bool IsEmpty(this string text) => string.IsNullOrEmpty(text);
+
+        public static bool IsEmpty<T>(this IEnumerable<T> items) => items == null ? true : !items.Any();
+
         public static void MoveCaretToLine(this IWpfTextView obj, int line)
         {
             var snapshotLine = obj.GetLine(line);
@@ -223,29 +227,71 @@ namespace CodeMap
         Region,
     }
 
-    static class BookmarksStore
+    public class DocumentContext
     {
-        static Dictionary<string, Dictionary<string, string>> Items = new Dictionary<string, Dictionary<string, string>>();
+        public Dictionary<string, string> Bookmarks = new Dictionary<string, string>();
+        public string ClassFilter = "";
+        public string MemberFilter = "";
+    }
 
-        public static void Purge(string documentName, IEnumerable<string> validBookmarks)
+    static class ContextStore
+    {
+        static Dictionary<string, DocumentContext> Context = new Dictionary<string, DocumentContext>();
+
+        public static void Update(string documentName, IEnumerable<string> validBookmarks)
         {
-            lock (Items)
+            lock (Context)
             {
-                if (Items.ContainsKey(documentName))
+                if (!Context.ContainsKey(documentName))
                 {
-                    var oldBookmarks = Items[documentName].Keys.Where(x => !validBookmarks.Contains(x)).ToList();
-
-                    oldBookmarks
-                        .ForEach(y => Items[documentName].Remove(y));
+                    Context.Add(documentName, new DocumentContext());
                 }
 
-                Items.Keys.ToList()
+                var oldBookmarks = Context[documentName].Bookmarks.Keys.Where(x => !validBookmarks.Contains(x)).ToList();
+
+                oldBookmarks
+                    .ForEach(y => Context[documentName].Bookmarks.Remove(y));
+
+                Context.Keys.ToList()
                     .ForEach(doc =>
                     {
                         if (!File.Exists(doc))
-                            Items.Remove(doc);
-                        else if (!Items[doc].Any())
-                            Items.Remove(doc);
+                            Context.Remove(doc);
+                        else
+                        {
+                            var context = Context[doc];
+                            if (context.Bookmarks.IsEmpty() && context.ClassFilter.IsEmpty() && context.MemberFilter.IsEmpty())
+                                Context.Remove(doc);
+                        }
+                    });
+
+                Save();
+            }
+        }
+
+        public static void Update(string documentName, string className, string memberName)
+        {
+            lock (Context)
+            {
+                if (!Context.ContainsKey(documentName))
+                {
+                    Context.Add(documentName, new DocumentContext());
+                }
+
+                Context[documentName].ClassFilter = className;
+                Context[documentName].MemberFilter = memberName;
+
+                Context.Keys.ToList()
+                    .ForEach(doc =>
+                    {
+                        if (!File.Exists(doc))
+                            Context.Remove(doc);
+                        else
+                        {
+                            var context = Context[doc];
+                            if (context.Bookmarks.IsEmpty() && context.ClassFilter.IsEmpty() && context.MemberFilter.IsEmpty())
+                                Context.Remove(doc);
+                        }
                     });
 
                 Save();
@@ -254,39 +300,49 @@ namespace CodeMap
 
         public static void Store(string documentName, string bookmarkId, string bookmarkName)
         {
-            lock (Items)
+            lock (Context)
             {
                 if (!string.IsNullOrEmpty(documentName))
                 {
-                    if (!Items.ContainsKey(documentName))
-                        Items[documentName] = new Dictionary<string, string>();
+                    if (!Context.ContainsKey(documentName))
+                        Context[documentName] = new DocumentContext();
 
                     if (string.IsNullOrEmpty(bookmarkName) || bookmarkName == "None")
-                        Items[documentName].Remove(bookmarkId);
+                        Context[documentName].Bookmarks.Remove(bookmarkId);
                     else
-                        Items[documentName][bookmarkId] = bookmarkName;
+                        Context[documentName].Bookmarks[bookmarkId] = bookmarkName;
                 }
             }
         }
 
-        public static string Read(string documentName, string location)
+        public static string ReadBookmark(string documentName, string location)
         {
-            lock (Items)
+            lock (Context)
             {
-                if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
-                    if (Items[documentName].ContainsKey(location))
-                        return Items[documentName][location];
+                if (!string.IsNullOrEmpty(documentName) && Context.ContainsKey(documentName))
+                    if (Context[documentName].Bookmarks.ContainsKey(location))
+                        return Context[documentName].Bookmarks[location];
                 return null;
+            }
+        }
+
+        public static (string classFilter, string memberFilter) ReadFilters(string documentName)
+        {
+            lock (Context)
+            {
+                if (!string.IsNullOrEmpty(documentName) && Context.ContainsKey(documentName))
+                    return (Context[documentName].ClassFilter, Context[documentName].MemberFilter);
+                return default;
             }
         }
 
         public static void Clear(string documentName)
         {
-            lock (Items)
+            lock (Context)
             {
-                if (!string.IsNullOrEmpty(documentName) && Items.ContainsKey(documentName))
+                if (!string.IsNullOrEmpty(documentName) && Context.ContainsKey(documentName))
                 {
-                    Items.Remove(documentName);
+                    Context[documentName].Bookmarks.Clear();
                 }
             }
         }
@@ -300,7 +356,7 @@ namespace CodeMap
                 if (File.Exists(bookmarksFile))
                 {
                     var json = File.ReadAllText(bookmarksFile);
-                    Items = JObject.Parse(json).ToObject<Dictionary<string, Dictionary<string, string>>>();
+                    Context = JObject.Parse(json).ToObject<Dictionary<string, DocumentContext>>();
                 }
             }
             catch { }
@@ -308,12 +364,12 @@ namespace CodeMap
 
         public static void Save()
         {
-            lock (Items)
+            lock (Context)
             {
                 try
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(bookmarksFile));
-                    File.WriteAllText(bookmarksFile, JObject.FromObject(Items).ToString());
+                    File.WriteAllText(bookmarksFile, JObject.FromObject(Context).ToString());
                 }
                 catch { }
             }

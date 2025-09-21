@@ -208,12 +208,13 @@ namespace CodeMap
 
                     foreach (MemberInfo item in items)
                     {
-                        var bookmark = BookmarksStore.Read(file, item.Id);
+                        var bookmark = ContextStore.ReadBookmark(file, item.Id);
+
                         if (bookmark != null)
                             item.ColorContext = bookmark;
 
                         // Only Python parser is primitive because classes and functions do not encode relationships.
-                        // just plain list. so ignore the class name filter
+                        // just plain list. so blockNextRefresh the class name filter
                         if (!IsPython)
                             if (ClassName?.Any() == true && // class name filter is set
                                 item.Title.IndexOf(ClassName, StringComparison.OrdinalIgnoreCase) == -1)
@@ -323,7 +324,7 @@ namespace CodeMap
 
                         foreach (var member in typeMembers)
                         {
-                            bookmark = BookmarksStore.Read(file, member.Id);
+                            bookmark = ContextStore.ReadBookmark(file, member.Id);
                             if (bookmark != null)
                                 member.ColorContext = bookmark;
 
@@ -348,7 +349,7 @@ namespace CodeMap
 
                     var currentFileBookmarks = items.Concat(items.SelectMany(x => x.Children)).Select(x => x.Id).ToArray();
 
-                    _ = Task.Run(() => BookmarksStore.Purge(file, currentFileBookmarks));
+                    _ = Task.Run(() => ContextStore.Update(file, currentFileBookmarks));
 
                     ErrorMessage = null;
 

@@ -541,7 +541,7 @@
                     Content="Sort"
                     IsChecked="{Binding SortMembers}"
                     IsEnabled="True"
-                    ToolTip="Sort members" />
+                    ToolTip="Sort by type and member names" />
 
                 <CheckBox
                     x:Name="AutoSynch"

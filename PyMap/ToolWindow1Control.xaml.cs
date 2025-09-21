@@ -267,6 +267,7 @@ namespace CodeMap
 
         string docFile = null;
         DateTime? docFileTimestamp = null;
+        bool blockNextRefresh = false;
 
         void RefreshMapIfRequired()
         {
@@ -282,7 +283,18 @@ namespace CodeMap
                 {
                     if (docFile != doc.FullName)
                     {
-                        docFile = doc.FullName;
+                        // setting filters normally triggers the refresh. so we need to block it here
+                        blockNextRefresh = true;
+
+                        if (!docFile.IsEmpty())
+                            ContextStore.Update(docFile, parser.ClassName, parser.MemberName);              // save the current filters
+
+                        (parser.ClassName, parser.MemberName) = ContextStore.ReadFilters(doc.FullName);     // read the new filters
+
+                        docFile = doc.FullName;                                                             // update current document name
+
+                        blockNextRefresh = false;
+
                         RefreshMap(true);
                         lastSelectedItem = codeMapList.SelectedItem;
                     }
@@ -364,6 +376,9 @@ namespace CodeMap
 
         void RefreshMap(bool force = false)
         {
+            if (blockNextRefresh)
+                return;
+
             try
             {
                 if (docFile != null && parser.CanParse(docFile))
@@ -466,14 +481,14 @@ namespace CodeMap
                     if (bookmarkName == "none-all")
                     {
                         parser.MemberList.ToList().ForEach(x => x.ColorContext = "");
-                        BookmarksStore.Clear(docFile);
+                        ContextStore.Clear(docFile);
                     }
                     else if (info != null)
                     {
                         info.ColorContext = (bookmarkName == "none") ? "" : bookmarkName;
-                        BookmarksStore.Store(docFile, info.Id, info.ColorContext);
+                        ContextStore.Store(docFile, info.Id, info.ColorContext);
                     }
-                    _ = Task.Run(BookmarksStore.Save);
+                    _ = Task.Run(ContextStore.Save);
                     BookmarkMenuClick?.Invoke(this, null);
                 }
                 catch
