@@ -1,3 +1,8 @@
+Release v2.4.0.0
+- #26: [Feature Request] Sorting Options
+- #27: [Feature Request] Hierarchical Sorting
+- Added tracking the ClassName and MemberName filters per document
+
 Release v2.3.4.0
 - Issue #24: Enhancement - item click navigate auto expands class/region 
 

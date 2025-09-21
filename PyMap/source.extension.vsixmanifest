@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="PyMap.Company.7e23d0e3-13e4-4af2-828a-433e71c2a335" Version="2.3.5.0" Language="en-US" Publisher="Oleg Shilo" />
+        <Identity Id="PyMap.Company.7e23d0e3-13e4-4af2-828a-433e71c2a335" Version="2.4.0.0" Language="en-US" Publisher="Oleg Shilo" />
         <DisplayName>CodeMap</DisplayName>
         <Description xml:space="preserve"> CodeMap (ex-PyMap) is a code navigation (document outline) view for C# and Python source files.</Description>
         <MoreInfo>https://github.com/oleg-shilo/PyMap.VSIX</MoreInfo>
