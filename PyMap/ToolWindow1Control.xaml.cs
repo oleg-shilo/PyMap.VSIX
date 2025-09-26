@@ -194,11 +194,7 @@ namespace CodeMap
             }));
         }
 
-        void SettingsChanged(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-            RefreshMap(true);
-        }
+        void SettingsChanged(object sender, RoutedEventArgs e) => SaveSettings();
 
         bool initialized = false;
 
@@ -224,6 +220,10 @@ namespace CodeMap
                     Settings.Instance.PrivateFields = parser.PrivateFields;
                     Settings.Instance.SortMembers = parser.SortMembers;
                     Settings.Instance.AutoSynch = parser.AutoSynch;
+                    Settings.Instance.EndRegion = parser.UseEndRegion;
+                    Settings.Instance.EndRegionTemplate = parser.EndRegionTemplate;
+                    Settings.Instance.StartRegion = parser.UseStartRegion;
+                    Settings.Instance.StartRegionTemplate = parser.StartRegionTemplate;
                     Settings.Instance.ShowMethodSignatures = parser.ShowMethodSignatures;
 
                     Settings.Instance.Save();
@@ -725,6 +725,31 @@ namespace CodeMap
                 edit.Insert(insertPos, regionText);
                 edit.Apply();
             }
+        }
+
+        private void RegionTemplate_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // Handle the event when user finishes editing the RegionTemplate text
+            if (sender is TextBox textBox)
+            {
+                if (textBox.Name == "EndRegionTemplate" && parser.EndRegionTemplate != textBox.Text)
+                {
+                    parser.EndRegionTemplate = textBox.Text;
+                    SaveSettings();
+                }
+
+                if (textBox.Name == "StartRegionTemplate" && parser.StartRegionTemplate != textBox.Text)
+                {
+                    parser.StartRegionTemplate = textBox.Text;
+                    SaveSettings();
+                }
+            }
+        }
+
+        private void RegionTemplate_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                RegionTemplate_LostFocus(sender, null);
         }
     }
 }

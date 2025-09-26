@@ -130,6 +130,26 @@ namespace CodeMap
             get => Settings.Instance.Interfaces; set { Settings.Instance.Interfaces = value; OnPropertyChanged(nameof(Interfaces)); }
         }
 
+        public bool UseEndRegion
+        {
+            get => Settings.Instance.EndRegion; set { Settings.Instance.EndRegion = value; OnPropertyChanged(nameof(UseEndRegion)); }
+        }
+
+        public string EndRegionTemplate
+        {
+            get => Settings.Instance.EndRegionTemplate; set { Settings.Instance.EndRegionTemplate = value; OnPropertyChanged(nameof(EndRegionTemplate)); }
+        }
+
+        public bool UseStartRegion
+        {
+            get => Settings.Instance.StartRegion; set { Settings.Instance.StartRegion = value; OnPropertyChanged(nameof(UseStartRegion)); }
+        }
+
+        public string StartRegionTemplate
+        {
+            get => Settings.Instance.StartRegionTemplate; set { Settings.Instance.StartRegionTemplate = value; OnPropertyChanged(nameof(StartRegionTemplate)); }
+        }
+
         bool isCSharp = true;
 
         public bool IsCSharp
@@ -316,9 +336,13 @@ namespace CodeMap
                             }
                         }
 
-                        if (!SortMembers)
+                        if (!SortMembers && (this.UseStartRegion || this.UseEndRegion))
                         {
-                            typeMembers.AddRange(children.Where(x => x.MemberType == MemberType.Region));
+                            typeMembers.AddRange(
+                                children.Where(x =>
+                                (x.MemberType == MemberType.StartRegion && this.UseStartRegion) ||
+                                 (x.MemberType == MemberType.EndRegion && this.UseEndRegion)));
+
                             typeMembers = typeMembers.OrderBy(x => x.Line).ToList();
                         }
 

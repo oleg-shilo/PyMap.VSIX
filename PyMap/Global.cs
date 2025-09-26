@@ -197,7 +197,8 @@ namespace CodeMap
             { MemberType.Type,       "CodeMap.Resources.icons.dark.class.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Method,     "CodeMap.Resources.icons.dark.method.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Constructor,"CodeMap.Resources.icons.dark.methodconstructor.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Region,     "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()}
+            { MemberType.StartRegion,     "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.EndRegion,     "CodeMap.Resources.icons.dark.public.png".LoadAsEmbeddedResourceImage()}
         };
 
         static public Dictionary<MemberType, BitmapSource> Light = new Dictionary<MemberType, BitmapSource>
@@ -210,7 +211,8 @@ namespace CodeMap
             { MemberType.Type,       "CodeMap.Resources.icons.light.class.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Method,     "CodeMap.Resources.icons.light.method.png".LoadAsEmbeddedResourceImage()},
             { MemberType.Constructor,"CodeMap.Resources.icons.light.methodconstructor.png".LoadAsEmbeddedResourceImage()},
-            { MemberType.Region,     "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()}
+            { MemberType.StartRegion,     "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()},
+            { MemberType.EndRegion,     "CodeMap.Resources.icons.light.public.png".LoadAsEmbeddedResourceImage()}
         };
     }
 
@@ -224,7 +226,8 @@ namespace CodeMap
         Method,
         Property,
         Field,
-        Region,
+        StartRegion,
+        EndRegion,
     }
 
     public class DocumentContext
@@ -418,7 +421,8 @@ namespace CodeMap
                     case MemberType.Field:
                         return $"{ParentPath}.{Content}";
 
-                    case MemberType.Region:
+                    case MemberType.StartRegion:
+                    case MemberType.EndRegion:
                         return $"{ParentPath}.{MemberContext}";
 
                     default:

@@ -389,6 +389,9 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.Resources>
                     <Style TargetType="CheckBox">
@@ -562,6 +565,59 @@
                     IsChecked="{Binding ShowMethodSignatures}"
                     IsEnabled="True"
                     ToolTip="Show method parameters in the signature." />
+
+                <!--  ##########################################################  -->
+
+                <TextBlock
+                    Grid.Row="9"
+                    Grid.Column="0"
+                    Text="Regions:"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <CheckBox
+                    x:Name="StartRegion"
+                    Grid.Row="9"
+                    Grid.Column="1"
+                    Click="SettingsChanged"
+                    Content="Public"
+                    IsChecked="{Binding UseStartRegion}"
+                    ToolTip="Show start region element"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <TextBox
+                    x:Name="StartRegionTemplate"
+                    Grid.Row="9"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Margin="30,0,10,0"
+                    VerticalAlignment="Center"
+                    KeyDown="RegionTemplate_KeyDown"
+                    LostFocus="RegionTemplate_LostFocus"
+                    Text="{Binding StartRegionTemplate}"
+                    ToolTip="Template for display text for the start region element"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <CheckBox
+                    x:Name="EndRegion"
+                    Grid.Row="10"
+                    Grid.Column="1"
+                    Click="SettingsChanged"
+                    Content="Private"
+                    IsChecked="{Binding UseEndRegion}"
+                    ToolTip="Show end region element"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBox
+                    x:Name="EndRegionTemplate"
+                    Grid.Row="10"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Margin="30,0,10,0"
+                    VerticalAlignment="Center"
+                    KeyDown="RegionTemplate_KeyDown"
+                    LostFocus="RegionTemplate_LostFocus"
+                    Text="{Binding EndRegionTemplate}"
+                    ToolTip="Template for display text for the end region element"
+                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
             </Grid>
         </Expander>
     </Grid>

@@ -129,7 +129,7 @@ class CSharpMapper
                     ContentType = "",
                     IsPublic = true,
                     Children = new List<MemberInfo>(),
-                    MemberType = MemberType.Region
+                    MemberType = x.IsKind(SyntaxKind.RegionDirectiveTrivia) ? MemberType.StartRegion : MemberType.EndRegion
                 }).ToArray();
 
         // iterate through all regions and decorate them
@@ -140,12 +140,12 @@ class CSharpMapper
             {
                 // start region line with the name of the region
                 startedRegion.Push(item.MemberContext);
-                item.MemberContext = $"<{item.MemberContext}>";
+                item.MemberContext = Settings.Instance.StartRegionTemplate?.Replace("{name}", item.MemberContext);
             }
             else
             {
                 // end region line
-                item.MemberContext = $"</{startedRegion.Pop()}>";
+                item.MemberContext = Settings.Instance.EndRegionTemplate?.Replace("{name}", startedRegion.Pop());
             }
         }
 
