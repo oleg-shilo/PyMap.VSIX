@@ -62,7 +62,7 @@ class CSharpMapper
 {
     public static IEnumerable<MemberInfo> Generate(string file, bool showMethodParams)
     {
-        string code;
+        string code = null;
 
         int lineOffset = 0;
 
@@ -70,10 +70,15 @@ class CSharpMapper
         {
             var className = Path.GetFileNameWithoutExtension(file).Replace("-", "_");
             var lines = File.ReadAllLines(file);
-            var htmlLines = lines.TakeWhile(x => !x.TrimStart().StartsWith("@code {"));
-            lineOffset = htmlLines.Count();
-            code = string.Join(Environment.NewLine, lines.Skip(lineOffset).Take(lines.Count() - lineOffset)); // first and last are to be removed
-            code = code.Replace("@code {", $"public class {className} {{");
+            if (lines.Any(x => x.Contains("@code {")))
+            {
+                var htmlLines = lines.TakeWhile(x => !x.TrimStart().StartsWith("@code {"));
+                lineOffset = htmlLines.Count();
+                code = string.Join(Environment.NewLine, lines.Skip(lineOffset).Take(lines.Count() - lineOffset)); // first and last are to be removed
+                code = code.Replace("@code {", $"public class {className} {{");
+            }
+            else
+                return new MemberInfo[0];
         }
         else
             code = File.ReadAllText(file);
