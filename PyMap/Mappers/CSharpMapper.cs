@@ -173,9 +173,12 @@ class CSharpMapper
                     method.ParameterList.Parameters.ToString().Deflate() :
                     "...";
 
+                (var namespacePath, var parentPath) = member.GetParentPath();
+
                 members.Add(new MemberInfo
                 {
-                    ParentPath = member.GetParentPath(),
+                    NamespacePath = namespacePath,
+                    ParentPath = parentPath,
                     Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                     EndLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                     Column = method.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -197,9 +200,12 @@ class CSharpMapper
         {
             var parentType = type.Parent as BaseTypeDeclarationSyntax;
 
+            (var namespacePath, var parentPath) = type.GetParentPath();
+
             map.Add(new MemberInfo
             {
-                ParentPath = type.GetParentPath(),
+                ParentPath = parentPath,
+                NamespacePath = namespacePath,
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 EndLine = type.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -211,9 +217,11 @@ class CSharpMapper
 
         foreach (TypeDeclarationSyntax type in types)
         {
+            (var namespacePath, var parentPath) = type.GetParentPath();
             var parent = new MemberInfo
             {
-                ParentPath = type.GetParentPath(),
+                ParentPath = parentPath,
+                NamespacePath = namespacePath,
                 Line = type.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                 EndLine = type.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                 Column = type.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -253,9 +261,11 @@ class CSharpMapper
 
                     var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
+                    (namespacePath, parentPath) = member.GetParentPath();
                     info = new MemberInfo
                     {
-                        ParentPath = member.GetParentPath(),
+                        ParentPath = parentPath,
+                        NamespacePath = namespacePath,
                         MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         EndLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
@@ -274,9 +284,12 @@ class CSharpMapper
 
                     var paramList = method.ParameterList.Parameters.ToString().Deflate();
 
+                    (namespacePath, parentPath) = member.GetParentPath();
+
                     info = new MemberInfo
                     {
-                        ParentPath = member.GetParentPath(),
+                        ParentPath = parentPath,
+                        NamespacePath = namespacePath,
                         Line = method.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         EndLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         MethodParameters = method.ParameterList.Parameters.ToString().Deflate(),
@@ -292,9 +305,13 @@ class CSharpMapper
                 else if (member is PropertyDeclarationSyntax)
                 {
                     var prop = (member as PropertyDeclarationSyntax);
+
+                    (namespacePath, parentPath) = member.GetParentPath();
+
                     info = new MemberInfo
                     {
-                        ParentPath = member.GetParentPath(),
+                        ParentPath = parentPath,
+                        NamespacePath = namespacePath,
                         Line = prop.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         EndLine = prop.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         Column = prop.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -308,9 +325,11 @@ class CSharpMapper
                 {
                     var field = (member as FieldDeclarationSyntax);
 
+                    (namespacePath, parentPath) = member.GetParentPath();
                     info = new MemberInfo
                     {
-                        ParentPath = member.GetParentPath(),
+                        ParentPath = parentPath,
+                        NamespacePath = namespacePath,
                         Line = field.GetLocation().GetLineSpan().StartLinePosition.Line + lineOffset,
                         EndLine = field.GetLocation().GetLineSpan().EndLinePosition.Line + lineOffset,
                         Column = field.GetLocation().GetLineSpan().StartLinePosition.Character,
@@ -324,7 +343,11 @@ class CSharpMapper
                 if (info != null)
                 {
                     if (!info.ParentPath.Any())
-                        info.ParentPath = type.GetParentPath();
+                    {
+                        (namespacePath, parentPath) = type.GetParentPath();
+                        info.ParentPath = parentPath;
+                        info.NamespacePath = namespacePath;
+                    }
                     members.Add(info);
                 }
             }
@@ -382,7 +405,7 @@ class CSharpMapper
 
 static class Extensions
 {
-    public static string GetParentPath(this SyntaxNode type)
+    public static (string, string) GetParentPath(this SyntaxNode type)
     {
         var namespaces = new List<string>();
         var types = new List<string>();
@@ -416,7 +439,7 @@ static class Extensions
 
         var result = string.Join("|", fullType.Where(x => !string.IsNullOrEmpty(x)));
 
-        return result;
+        return (string.Join(".", namespaces), result);
     }
 
     public static string Deflate(this string text)

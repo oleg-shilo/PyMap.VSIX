@@ -390,6 +390,7 @@ namespace CodeMap
 
         public string Name = "";
         public string ParentPath = "";
+        public string NamespacePath = "";
 
         public string Id
         {
@@ -405,9 +406,9 @@ namespace CodeMap
                         {
                             if (!ParentPath.Any())
                                 return Title; // global namespace
-                            else
-                            if (ParentPath.Count(x => x == '.') == 0 &&  // not nested
-                                ParentPath.Count(x => x == '|') == 0)    //
+                            else if (ParentPath == NamespacePath ||
+                                     (ParentPath.Count(x => x == '.') == 0 &&  // not nested
+                                      ParentPath.Count(x => x == '|') == 0))
                                 return $"{ParentPath}|{Title}"; // ParentPath is a namespace
                             else
                                 return $"{ParentPath}.{Title}";

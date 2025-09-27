@@ -71,10 +71,10 @@ namespace CodeMap.Test
             Assert.Contains("<global>", idList);
             Assert.Contains("NakedRootClass", idList);
             Assert.Contains(".RootMethod()", idList);
-            Assert.Contains(".<NestedTypesRegion>", idList);
-            Assert.Contains(".</NestedTypesRegion>", idList);
-            Assert.Contains(".<NestedStructRegion>", idList);
-            Assert.Contains(".</NestedStructRegion>", idList);
+            Assert.Contains(".#start: NestedTypesRegion", idList);
+            Assert.Contains(".#end: NestedTypesRegion", idList);
+            Assert.Contains(".#start: NestedStructRegion", idList);
+            Assert.Contains(".#end: NestedStructRegion", idList);
             Assert.Contains("AppNamespace|RootClass.NestedEnum", idList);
             Assert.Contains("AppNamespace|RootClass.NestedClass", idList);
             Assert.Contains("AppNamespace|RootClass.NestedStruct", idList);
@@ -126,11 +126,52 @@ namespace CodeMap.Test
             var expected = """
                 RootClass
                     PropB
-                    <Fields>
+                    #start: Fields
                     FieldCB
                     FieldB
-                    </Fields>
+                    #end: Fields
                     PropA
+                """;
+            Assert.Equal(expected.Trim(), view.Trim());
+        }
+
+        [Fact]
+        void Issue_29()
+        {
+            var code = """
+                using System;
+                namespace nsp1.nsp2.nsp3;
+
+                class RootClass
+                {
+                    class NestedClass
+                    {
+                        int MethodA(){}
+                        int MethodB(){}
+                    }
+                    int FieldA
+                    int FieldB
+                }
+                """;
+
+            var file = code.ToTestInputFile();
+
+            var parser = new SyntaxParser();
+
+            //---------------------
+            parser.SortMembers = false; // no sorting so the items appear as they are in the file
+            parser.GenerateMap(file);
+
+            //---------------------
+            var view = parser.MemberList.ToView();
+
+            var expected = """
+                RootClass
+                    NestedClass
+                        MethodA
+                        MethodB
+                    FieldA
+                    FieldB
                 """;
             Assert.Equal(expected.Trim(), view.Trim());
         }
@@ -175,13 +216,13 @@ namespace CodeMap.Test
             var expected = """
                 RootClass
                     PropB
-                    <Fields>
+                    #start: Fields
                     FieldC
-                    <Constants>
+                    #start: Constants
                     Id
-                    </Constants>
+                    #end: Constants
                     FieldB
-                    </Fields>
+                    #end: Fields
                     PropA
                 """;
             Assert.Equal(expected.Trim(), view.Trim());
