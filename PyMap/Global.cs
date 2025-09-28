@@ -407,8 +407,8 @@ namespace CodeMap
                             if (!ParentPath.Any())
                                 return Title; // global namespace
                             else if (ParentPath == NamespacePath ||
-                                     (ParentPath.Count(x => x == '.') == 0 &&  // not nested
-                                      ParentPath.Count(x => x == '|') == 0))
+                                     (!ParentPath.Contains('.') &&  // not nested (e.g. "" meaning this is a root class member)
+                                      !ParentPath.Contains('|')))   // (e.g. MyNamespace)
                                 return $"{ParentPath}|{Title}"; // ParentPath is a namespace
                             else
                                 return $"{ParentPath}.{Title}";
@@ -496,6 +496,20 @@ namespace CodeMap
                 return false;
             return null;
         }
+    }
+
+    public sealed class ReverseBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool booleanValue)
+            {
+                return !booleanValue; // Invert the boolean value
+            }
+            return value; // Return original value if not a boolean
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 
     public sealed class TextLengthToVisibilityConverter : IValueConverter

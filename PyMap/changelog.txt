@@ -1,3 +1,9 @@
+Release v2.5.0.0
+- #29: Razor pages that contain no page level code break tree
+- #30: Region layout
+- #31: Region start and end node display text should be configurable
+
+
 Release v2.4.0.0
 - #26: [Feature Request] Sorting Options
 - #27: [Feature Request] Hierarchical Sorting

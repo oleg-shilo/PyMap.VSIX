@@ -33,6 +33,7 @@
 
         <local:BookmarkToForegroundConverter x:Key="BookmarkToForegroundConverter" />
         <local:TextLengthToVisibilityConverter x:Key="TextLengthToVisibilityConverter" />
+        <local:ReverseBoolConverter x:Key="ReverseBoolConverter" />
         <local:IdeFontSizeToToolWindowsFontSizeConverter x:Key="IdeFontSizeToToolWindowsFontSizeConverter" />
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
@@ -579,45 +580,58 @@
                     Grid.Row="9"
                     Grid.Column="1"
                     Click="SettingsChanged"
-                    Content="Public"
                     IsChecked="{Binding UseStartRegion}"
-                    ToolTip="Show start region element"
+                    IsEnabled="{Binding ElementName=SortMembers, Path=IsChecked, Converter={StaticResource ReverseBoolConverter}}"
+                    ToolTip="Show start region element.&#x0a;Only takes effect if sorting is disabled."
+                    ToolTipService.ShowOnDisabled="True"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                <TextBox
-                    x:Name="StartRegionTemplate"
+                <Grid
                     Grid.Row="9"
                     Grid.Column="1"
                     Grid.ColumnSpan="2"
                     Margin="30,0,10,0"
-                    VerticalAlignment="Center"
-                    KeyDown="RegionTemplate_KeyDown"
-                    LostFocus="RegionTemplate_LostFocus"
-                    Text="{Binding StartRegionTemplate}"
-                    ToolTip="Template for display text for the start region element"
-                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    IsEnabled="{Binding Path=IsEnabled, ElementName=StartRegion}">
+
+                    <TextBox
+                        x:Name="StartRegionTemplate"
+                        VerticalAlignment="Center"
+                        IsEnabled="{Binding Path=IsChecked, ElementName=StartRegion}"
+                        KeyDown="RegionTemplate_KeyDown"
+                        LostFocus="RegionTemplate_LostFocus"
+                        Text="{Binding StartRegionTemplate}"
+                        ToolTip="Template for display text for the start region element.&#x0a;Only takes effect if sorting is disabled."
+                        ToolTipService.ShowOnDisabled="True"
+                        Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </Grid>
 
                 <CheckBox
                     x:Name="EndRegion"
                     Grid.Row="10"
                     Grid.Column="1"
                     Click="SettingsChanged"
-                    Content="Private"
                     IsChecked="{Binding UseEndRegion}"
-                    ToolTip="Show end region element"
+                    IsEnabled="{Binding ElementName=SortMembers, Path=IsChecked, Converter={StaticResource ReverseBoolConverter}}"
+                    ToolTip="Show end region element.&#x0a;Only takes effect if sorting is disabled."
+                    ToolTipService.ShowOnDisabled="True"
                     Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <TextBox
-                    x:Name="EndRegionTemplate"
+                <Grid
                     Grid.Row="10"
                     Grid.Column="1"
                     Grid.ColumnSpan="2"
                     Margin="30,0,10,0"
-                    VerticalAlignment="Center"
-                    KeyDown="RegionTemplate_KeyDown"
-                    LostFocus="RegionTemplate_LostFocus"
-                    Text="{Binding EndRegionTemplate}"
-                    ToolTip="Template for display text for the end region element"
-                    Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    IsEnabled="{Binding Path=IsEnabled, ElementName=EndRegion}">
+                    <TextBox
+                        x:Name="EndRegionTemplate"
+                        VerticalAlignment="Center"
+                        IsEnabled="{Binding Path=IsChecked, ElementName=EndRegion}"
+                        KeyDown="RegionTemplate_KeyDown"
+                        LostFocus="RegionTemplate_LostFocus"
+                        Text="{Binding EndRegionTemplate}"
+                        ToolTip="Template for display text for the end region element.&#x0a;Only takes effect if sorting is disabled."
+                        ToolTipService.ShowOnDisabled="True"
+                        Visibility="{Binding IsCSharp, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </Grid>
             </Grid>
         </Expander>
     </Grid>
