@@ -99,6 +99,14 @@ namespace CodeMap
 
             codeMapList.SelectionChanged += CodeMapList_SelectionChanged;
             codeMapList.PreviewMouseLeftButtonUp += CodeMapList_PreviewMouseLeftButtonUp;
+            codeMapList.DragLeave += (s, e) => RemoveDropAdorner();
+            codeMapList.LostFocus += (s, e) => RemoveDropAdorner();
+            codeMapList.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Escape)
+                    RemoveDropAdorner();
+            };
+
             parser.MapInvalidated += () => RefreshMap(force: true);
 
             initialized = true;
@@ -512,8 +520,13 @@ namespace CodeMap
 
         void codeMapList_PreviewMouseMove(object sender, MouseEventArgs e)
         {
+            var keyModifiers = Keyboard.Modifiers;
             // Only allow drag if Ctrl is pressed and all other conditions are met
-            if (!parser.CanParse(docFile) || !parser.IsCSharp || parser.SortMembers || (Keyboard.Modifiers & ModifierKeys.Control) == 0)
+            Debug.WriteLine($"parser.CanParse(docFile):{parser.CanParse(docFile)}; parser.IsCSharp:{parser.IsCSharp}; " +
+                $"parser.SortMembers:{parser.SortMembers} || Ctrl: {(Keyboard.Modifiers & ModifierKeys.Control) != ModifierKeys.Control}");
+            if (!parser.CanParse(docFile) ||
+                !parser.IsCSharp ||
+                parser.SortMembers || (keyModifiers & ModifierKeys.Control) != ModifierKeys.Control)
                 return;
 
             if (e.LeftButton == MouseButtonState.Pressed && _draggedItem != null)
@@ -547,6 +560,18 @@ namespace CodeMap
                     return;
                 }
 
+                // May need to abort it as we cannot drop below the last item since we
+                // have no definitive way of knowing the true end of the parent member
+                // (e.g. dropping below the last member of the nested class)
+                // However the usefulness of being able to drop below the last item is
+                // higher than nested members awkwardness. So we disable the check.
+                // var items = codeMapList.ItemsSource as System.Collections.IList;
+                // if (items?.Count == insertIndex) // last item
+                // {
+                //     RemoveDropAdorner();
+                //      return;
+                // }
+
                 _dropAdorner = new DropPositionAdorner(codeMapList, insertIndex);
                 _adornerLayer.Add(_dropAdorner);
 
@@ -556,6 +581,8 @@ namespace CodeMap
             }
             catch (Exception)
             {
+                // Ensure cleanup on any exception
+                RemoveDropAdorner();
             }
         }
 
@@ -572,18 +599,30 @@ namespace CodeMap
 
                 // MemberInfo src = _draggedItem as MemberInfo;
                 MemberInfo src = e.Data.GetData(typeof(MemberInfo)) as MemberInfo;
-                MemberInfo dest = items[insertIndex] as MemberInfo;
 
-                if (items != null && src != null)
+                if (items != null && src != null && items.Count > 0)
                 {
-                    if (src != null && dest != null && src != dest && !(insertIndex > 0 && items[insertIndex - 1] == src))
+                    int? destLine = null;
+
+                    if (insertIndex < items.Count)
                     {
-                        // Debug.WriteLine($"Source: {src.Id} -> Dest: above {dest.Id}; ");
-                        MoveDocumentRegionInEditor(src.Line, src.EndLine, dest.Line);
-                        try
+                        MemberInfo dest = items[insertIndex] as MemberInfo;
+
+                        if (dest != null && src != dest && !(insertIndex > 0 && items[insertIndex - 1] == src))
                         {
-                            dte.ActiveDocument.Save();
+                            destLine = dest.Line;
                         }
+                    }
+                    else
+                    {
+                        var dest = items[items.Count - 1] as MemberInfo;
+                        destLine = dest?.EndLine + 1;
+                    }
+
+                    if (destLine.HasValue)
+                    {
+                        MoveDocumentRegionInEditor(src.Line, src.EndLine, destLine.Value);
+                        try { dte.ActiveDocument.Save(); }
                         catch { }
 
                         // cannot call RefreshMap as it will use the file to read the code not the dte
@@ -597,7 +636,6 @@ namespace CodeMap
                         //     items.RemoveAt(oldIndex);
                         //     if (insertIndex > oldIndex) insertIndex--;
                         // }
-
                         // items.Insert(insertIndex, src);
                     }
                 }
@@ -606,6 +644,8 @@ namespace CodeMap
             }
             catch (Exception)
             {
+                // Ensure cleanup on any exception
+                RemoveDropAdorner();
             }
         }
 
