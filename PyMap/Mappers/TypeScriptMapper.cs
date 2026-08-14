@@ -13,44 +13,7 @@ static class TypeScriptMapper
         // future: consider a proper TypeScript parser integration
     }
 
-    static string ShortDecl(string decl)
-    {
-        if (string.IsNullOrWhiteSpace(decl))
-            return decl;
-        var s = decl.Trim();
-        // remove leading export/const/let/var keywords
-        s = s.Replace("export ", "");
-        s = s.Replace("const ", "");
-        s = s.Replace("let ", "");
-        s = s.Replace("var ", "");
-        // trim at ':' or '=' if present
-        int idx = s.IndexOf(':');
-        if (idx >= 0)
-            s = s.Substring(0, idx).Trim();
-        else
-        {
-            idx = s.IndexOf('=');
-            if (idx >= 0)
-                s = s.Substring(0, idx).Trim();
-        }
-        return s;
-    }
 
-    static bool IsDeclarationFunctionOrClass(string line)
-    {
-        if (string.IsNullOrWhiteSpace(line))
-            return false;
-        var t = line.TrimStart();
-        if (classRegex.IsMatch(t))
-            return true;
-        if (functionRegex.IsMatch(t))
-            return true;
-        if (varFuncExpr.IsMatch(t) || varArrowFunc.IsMatch(t) || varArrowFuncSingle.IsMatch(t))
-            return true;
-        if (topLevelVarRegex.IsMatch(t))
-            return true;
-        return false;
-    }
 
     static bool IsExported(string line)
     {
@@ -92,10 +55,23 @@ static class TypeScriptMapper
                     var parent = nameLookup[possibleParentKey];
                     parent.Children.Add(item);
                     item.ParentPath = candidateParentName;
-                    if (item.Content.Length > candidateParentName.Length)
-                        item.Content = item.Content.Substring(candidateParentName.Length).TrimStart('.');
+                    // Use the declared Name to derive the short display content safely.
+                    // If Name is a dotted path like "Parent.child", prefer the substring after the last parent dot.
+                    var dottedPrefix = candidateParentName + ".";
+                    if (item.Name.StartsWith(dottedPrefix))
+                    {
+                        // preserve any parameter suffix already captured in Content (e.g., "name(arg: T)")
+                        var suffix = "";
+                        var parenIdx = item.Content.IndexOf('(');
+                        if (parenIdx >= 0)
+                            suffix = item.Content.Substring(parenIdx);
+                        item.Content = item.Name.Substring(dottedPrefix.Length) + suffix;
+                    }
                     else
+                    {
+                        // fallback: preserve existing content but trim leading dots
                         item.Content = item.Content.TrimStart('.');
+                    }
                     item.ContentType = "    ";
                     attached = true;
                     found = true;
@@ -121,54 +97,13 @@ static class TypeScriptMapper
         return roots;
     }
 
-    static int FindAncestorIndexMatching(string[] code, int childIndex, Func<string, bool> predicate)
+
+    // Find the line index where a block starting at startIndex ends by matching braces.
+    static int FindBlockEnd(string[] code, int startIndex)
     {
-        int idx = ParentLineIndexOf(code, childIndex);
-        while (idx != -1)
-        {
-            var line = code[idx];
-            if (predicate(line))
-                return idx;
-            idx = ParentLineIndexOf(code, idx);
-        }
-        return -1;
-    }
-
-    static string AppendTypeAnnotation(string rawLine, string name)
-    {
-        if (string.IsNullOrEmpty(rawLine) || string.IsNullOrEmpty(name))
-            return name;
-
-        // Find the declaration occurrence of the name as a standalone token (avoid matching inside UserCardProps etc.)
-        var nameMatch = Regex.Match(rawLine, "\\b" + Regex.Escape(name) + "\\b");
-        if (!nameMatch.Success)
-            return name;
-        var idx = nameMatch.Index;
-
-        // ensure we don't call IndexOf with a start beyond the string length
-        if (idx + name.Length >= rawLine.Length)
-            return name;
-
-        var idxColon = rawLine.IndexOf(':', idx + name.Length);
-        if (idxColon < 0)
-            return name;
-
-        // find '=' after colon to limit the type annotation range
-        var idxEq = rawLine.IndexOf('=', idxColon);
-        int end = idxEq >= 0 ? idxEq : rawLine.Length;
-        var typePart = rawLine.Substring(idxColon, end - idxColon).Trim();
-        return name + typePart;
-    }
-
-    // Find first 'return' index in a block started at ancestorIndex (works for class methods too)
-    static int FirstReturnIndexInBlock(string[] code, int ancestorIndex)
-    {
-        if (ancestorIndex < 0 || ancestorIndex >= code.Length)
-            return -1;
-
         int braceDepth = 0;
         bool started = false;
-        for (int i = ancestorIndex; i < code.Length; i++)
+        for (int i = startIndex; i < code.Length; i++)
         {
             var line = code[i];
             if (line.TrimStart().StartsWith("//"))
@@ -179,19 +114,109 @@ static class TypeScriptMapper
                 started = true;
                 braceDepth += line.Count(c => c == '{');
             }
-            if (started && line.Contains("return "))
-                return i;
-
             if (started && line.Contains("}"))
             {
                 braceDepth -= line.Count(c => c == '}');
                 if (braceDepth <= 0)
-                    break;
+                    return i;
             }
         }
-
-        return -1;
+        return startIndex;
     }
+
+    // Find the approximate end line for an expression-bodied arrow function or JSX expression
+    static int FindExpressionBodyEnd(string[] code, int declarationIndex)
+    {
+        if (declarationIndex < 0 || declarationIndex >= code.Length)
+            return declarationIndex;
+
+        // locate '=>' in the declaration or next few lines
+        int arrowLine = -1;
+        int arrowPos = -1;
+        for (int j = declarationIndex; j < Math.Min(code.Length, declarationIndex + 6); j++)
+        {
+            var idx = code[j].IndexOf("=>");
+            if (idx >= 0)
+            {
+                arrowLine = j;
+                arrowPos = idx + 2;
+                break;
+            }
+        }
+        if (arrowLine == -1)
+            return declarationIndex;
+
+        // find first non-space char after '=>'
+        int lineIdx = arrowLine;
+        int charPos = arrowPos;
+        while (lineIdx < code.Length)
+        {
+            var line = code[lineIdx];
+            for (int k = charPos; k < line.Length; k++)
+            {
+                var c = line[k];
+                if (char.IsWhiteSpace(c))
+                    continue;
+
+                // parentheses-based expression
+                if (c == '(')
+                {
+                    int depth = 0;
+                    for (int ii = lineIdx; ii < code.Length; ii++)
+                    {
+                        var s = code[ii];
+                        for (int kk = (ii == lineIdx ? k : 0); kk < s.Length; kk++)
+                        {
+                            if (s[kk] == '(') depth++;
+                            else if (s[kk] == ')')
+                            {
+                                depth--;
+                                if (depth == 0)
+                                    return ii;
+                            }
+                        }
+                    }
+                    return code.Length - 1;
+                }
+
+                // JSX-like expression starting with '<'
+                if (c == '<')
+                {
+                    int depth = 0;
+                    bool inString = false;
+                    for (int ii = lineIdx; ii < code.Length; ii++)
+                    {
+                        var s = code[ii];
+                        for (int kk = (ii == lineIdx ? k : 0); kk < s.Length; kk++)
+                        {
+                            var ch = s[kk];
+                            if (ch == '"' || ch == '\'')
+                                inString = !inString;
+                            if (inString)
+                                continue;
+                            if (ch == '<') depth++;
+                            else if (ch == '>')
+                            {
+                                depth--;
+                                if (depth == 0)
+                                    return ii;
+                            }
+                        }
+                    }
+                    return code.Length - 1;
+                }
+
+                // expression is a single value; end at the declaration line
+                return arrowLine;
+            }
+            lineIdx++;
+            charPos = 0;
+        }
+
+        return declarationIndex;
+    }
+
+
 
     // TypeScript-specific regexes (more permissive: generics, export default, async)
     // interface Foo { ... }
@@ -235,54 +260,7 @@ static class TypeScriptMapper
     // top-level const/let/var with optional type annotation
     static Regex topLevelVarRegex = new Regex(@"^(?:export\s+)?(?:const|let|var)\s+([A-Za-z_][\w_]*)(?:\s*:\s*[^=;]+)?\s*(?:=|;)", RegexOptions.Compiled);
 
-    static string ParentLineOf(string[] code, int childIndex)
-    {
-        var childIndent = code[childIndex].GetIndent();
 
-        for (int i = childIndex - 1; i >= 0; i--)
-        {
-            if (code[i].Length > 0)
-            {
-                var currentIndent = code[i].GetIndent();
-                if (currentIndent < childIndent)
-                    return code[i];
-            }
-        }
-        return null;
-    }
-
-    static int ParentLineIndexOf(string[] code, int childIndex)
-    {
-        var childIndent = code[childIndex].GetIndent();
-
-        for (int i = childIndex - 1; i >= 0; i--)
-        {
-            if (code[i].Length > 0)
-            {
-                var currentIndent = code[i].GetIndent();
-                if (currentIndent < childIndent)
-                    return i;
-            }
-        }
-        return -1;
-    }
-
-    // Heuristic: determine if a parent declaration is a const/var/let component
-    // with a function body that contains an explicit 'return' (e.g., React functional component).
-    // Determine whether the declaration line is explicitly typed as a React component
-    static bool IsTypedReactComponentDeclaration(string declLine)
-    {
-        if (string.IsNullOrWhiteSpace(declLine))
-            return false;
-
-        // look for a TypeScript type annotation after ':' that mentions React/FC/JSX
-        var idx = declLine.IndexOf(':');
-        if (idx < 0)
-            return false;
-
-        var typePart = declLine.Substring(idx + 1);
-        return typePart.Contains("React") || typePart.Contains("FC") || typePart.Contains("JSX.Element") || typePart.Contains("ReactNode") || typePart.Contains("ComponentType");
-    }
 
     // Find the first 'return' line index within the function/block starting at parentIndex; -1 if not found
     static int FirstReturnIndexInFunction(string[] code, int parentIndex)
@@ -373,598 +351,215 @@ static class TypeScriptMapper
     {
         var map = new List<MemberInfo>();
 
-        // control keywords to exclude from method-like matching
-        var controlKeywords = new HashSet<string> { "if", "for", "while", "switch", "catch", "with", "else", "do", "try" };
+        // simple stack to track enclosing class/interface contexts along with their brace depth
+        var ctxStack = new Stack<(string Name, MemberType Type, int Depth)>();
+        // stack to track function scopes (we will ignore any declarations found inside these scopes)
+        var funcStack = new Stack<int>();
+        int braceDepth = 0;
 
         for (int i = 0; i < code.Length; i++)
         {
-            // Support decorators: if a line starts with '@' the declaration may be on the next line
-            int parseIndex = i;
-            var raw = code[parseIndex].TrimStart();
-            if (raw.StartsWith("@"))
-            {
-                // find next non-empty, non-comment line
-                int k = parseIndex + 1;
-                while (k < code.Length && string.IsNullOrWhiteSpace(code[k])) k++;
-                if (k < code.Length)
-                    parseIndex = k;
-                raw = code[parseIndex].TrimStart();
-            }
-
-            var line = raw;
+            var raw = code[i];
+            var line = raw.Trim();
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
-            // If this line is inside the return(...) block of a typed React component
-            // skip processing it entirely so nested callbacks/props inside returned JSX
-            // are not tracked. Find nearest declaration ancestor and check its return index.
-            int declAncestor = FindAncestorIndexMatching(code, parseIndex, l => IsDeclarationFunctionOrClass(l));
-            if (declAncestor != -1)
-            {
-                var declLine = code[declAncestor].TrimStart();
-                if (IsTypedReactComponentDeclaration(declLine))
-                {
-                    int retIdx = classRegex.IsMatch(declLine) ? FirstReturnIndexInBlock(code, declAncestor) : FirstReturnIndexInFunction(code, declAncestor);
-                    // only skip lines that are after the return index (do not skip the declaration line itself)
-                    if (retIdx != -1 && parseIndex > retIdx)
-                        continue;
-                }
-            }
+            // update brace depth after evaluating the line's declarations (we capture opening depth for contexts below)
+            int opens = raw.Count(c => c == '{');
+            int closes = raw.Count(c => c == '}');
 
             Match match;
 
-            // skip import statements and export blocks
-            if (line.StartsWith("import ") || line.StartsWith("export {") || line.StartsWith("export default {"))
-                continue;
+            // If we are already inside a function scope (tracked by end-line indices), skip capturing declarations on this line.
+            // First, drop any funcStack entries that have already ended before this line.
+            while (funcStack.Count > 0 && i > funcStack.Peek())
+                funcStack.Pop();
 
-            if ((match = interfaceRegex.Match(line)).Success)
+            if (funcStack.Count > 0 && i <= funcStack.Peek())
             {
-                var name = match.Groups[1].Value;
-                var info = new MemberInfo { Line = parseIndex, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Interface, Content = name };
-                info.IsPublic = IsExported(line);
-                map.Add(info);
+                // update brace depth and pop contexts as usual, then skip
+                braceDepth += opens - closes;
+                while (ctxStack.Count > 0 && braceDepth < ctxStack.Peek().Depth)
+                {
+                    ctxStack.Pop();
+                }
+                // still inside a function expression/body: skip capturing
                 continue;
             }
 
-            if ((match = typeRegex.Match(line)).Success)
-            {
-                var name = match.Groups[1].Value;
-                var info = new MemberInfo { Line = parseIndex, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Type, Content = name };
-                info.IsPublic = IsExported(line);
-                map.Add(info);
-                continue;
-            }
-
-            if ((match = enumRegex.Match(line)).Success)
-            {
-                var name = match.Groups[1].Value;
-                var info = new MemberInfo { Line = parseIndex, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Type, Content = name };
-                info.IsPublic = IsExported(line);
-                map.Add(info);
-                continue;
-            }
-
+            // class declaration
             if ((match = classRegex.Match(line)).Success)
             {
                 var name = match.Groups[1].Value;
-                var info = new MemberInfo { Line = parseIndex, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Class, Content = name };
+                var info = new MemberInfo { Line = i, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Class, Content = name };
                 info.IsPublic = IsExported(line);
                 map.Add(info);
-                continue;
+                // record context starting at current brace depth; ensure at least one depth so declarations
+                // where the '{' is on the next line are tracked correctly
+                ctxStack.Push((name, MemberType.Class, braceDepth + Math.Max(1, opens)));
             }
 
-            // top-level functions
-            if ((match = functionRegex.Match(line)).Success)
+            // interface declaration
+            else if ((match = interfaceRegex.Match(line)).Success)
             {
                 var name = match.Groups[1].Value;
-                var parms = "(" + match.Groups[2].Value + ")";
+                var info = new MemberInfo { Line = i, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Interface, Content = name };
+                info.IsPublic = IsExported(line);
+                map.Add(info);
+                // ensure at least one depth so interface bodies with opening brace on the next line are tracked
+                ctxStack.Push((name, MemberType.Interface, braceDepth + Math.Max(1, opens)));
+            }
 
-                // detect if this function is nested inside another function/method/arrow/etc
-                int parentIndex = ParentLineIndexOf(code, parseIndex);
-                if (parentIndex != -1)
+            // enum declarations
+            else if ((match = enumRegex.Match(line)).Success)
+            {
+                var name = match.Groups[1].Value;
+                var info = new MemberInfo { Line = i, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Type, Content = name };
+                info.IsPublic = IsExported(line);
+                map.Add(info);
+                // do not push enum as a context
+            }
+
+            // type alias declarations (record but do not push as context)
+            else if ((match = typeRegex.Match(line)).Success)
+            {
+                var name = match.Groups[1].Value;
+                var info = new MemberInfo { Line = i, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Type, Content = name };
+                info.IsPublic = IsExported(line);
+                map.Add(info);
+            }
+
+            // top-level function declarations (treated as methods)
+            else if ((match = functionRegex.Match(line)).Success)
+            {
+                var name = match.Groups[1].Value;
+                var parms = match.Groups[2].Value;
+                var info = new MemberInfo { Line = i, MemberContext = "", MemberType = MemberType.Method };
+                info.Name = name;
+                if (ctxStack.Count > 0 && (ctxStack.Peek().Type == MemberType.Class || ctxStack.Peek().Type == MemberType.Interface))
                 {
-                    // find nearest ancestor that is a typed React component declaration
-                    int componentAncestor = FindAncestorIndexMatching(code, parseIndex, l => IsDeclarationFunctionOrClass(l));
-                    if (componentAncestor != -1)
-                    {
-                        var declLine = code[componentAncestor].TrimStart();
-                        int returnIndex = -1;
-                        if (classRegex.IsMatch(declLine))
-                            returnIndex = FirstReturnIndexInBlock(code, componentAncestor);
-                        else
-                            returnIndex = FirstReturnIndexInFunction(code, componentAncestor);
-
-                        if (returnIndex != -1 && parseIndex >= returnIndex)
-                            continue;
-                    }
-                    var parent = code[parentIndex];
-
-                    var ptrim = parent.TrimStart();
-                    if (functionRegex.IsMatch(ptrim) || classMethod.IsMatch(ptrim) || varFuncExpr.IsMatch(ptrim) || varArrowFunc.IsMatch(ptrim) || varArrowFuncSingle.IsMatch(ptrim))
-                    {
-                        // prefer enclosing class as parent so nested functions inside methods appear under the class
-                        int classAncestor = FindAncestorIndexMatching(code, parseIndex, l => classRegex.IsMatch(l.TrimStart()));
-                        var titleSource = classAncestor != -1 ? code[classAncestor] : parent;
-                        string parentTitle;
-                        var titleTrimmed = titleSource.TrimStart();
-                        var classMatch = classRegex.Match(titleTrimmed);
-                        if (classMatch.Success)
-                        {
-                            parentTitle = classMatch.Groups[1].Value;
-                        }
-                        else
-                        {
-                            parentTitle = titleSource.Split('(').First()
-                                .Replace("export", "")
-                                .Replace("public", "")
-                                .Replace("static", "")
-                                .Replace("class ", "")
-                                .Replace("interface ", "")
-                                .Replace("{", "");
-                            parentTitle = parentTitle.Split('(').First().Trim();
-                        }
-                        name = parentTitle + "." + name;
-                    }
-                }
-
-                var info = new MemberInfo();
-                info.Line = parseIndex;
-                info.MemberContext = "";
-                // if nested under a class, assign ParentPath to class and Name to the dotted function name.
-                // Use the short name for Content so Structure() shows the short name while Name is dotted.
-                string shortName = name;
-                if (name.Contains('.'))
-                {
-                    var parts = name.Split(new[] { '.' }, 2);
-                    info.ParentPath = parts[0];
-                    info.Name = parts[0] + "." + parts[1];
-                    shortName = parts[1];
+                    info.ParentPath = ctxStack.Peek().Name;
+                    info.Name = info.ParentPath + "." + name;
                 }
                 else
                 {
                     info.ParentPath = "";
-                    info.Name = name;
                 }
-                info.MemberType = MemberType.Method;
-                info.MethodParameters = match.Groups[2].Value;
-                // Content should start as the dotted name (Structure() will trim to short name)
-                info.Content = showMethodParams ? info.Name + parms : info.Name + "(...)";
-                // mark public/exported for top-level, otherwise determine from modifiers
-                info.IsPublic = string.IsNullOrEmpty(info.ParentPath) ? IsExported(line) : !IsMemberPrivate(line);
+                info.MethodParameters = parms;
+                info.Content = showMethodParams ? name + "(" + parms + ")" : name + "(...)";
+                info.IsPublic = IsExported(line);
                 map.Add(info);
-                continue;
+                // mark function scope so we don't capture nested declarations inside its body
+                var funcEnd = FindBlockEnd(code, i);
+                funcStack.Push(funcEnd);
             }
 
-            // class methods (avoid matching control keywords)
-            if (!controlKeywords.Contains(line.Split(" (".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "") && (match = classMethod.Match(line)).Success)
+            // top-level const/let/var treated as properties
+            else if ((match = topLevelVarRegex.Match(line)).Success)
             {
                 var name = match.Groups[1].Value;
-                var parms = "(" + match.Groups[2].Value + ")";
-
-                var parent = ParentLineOf(code, i);
-                if (parent != null)
+                var info = new MemberInfo { Line = i, MemberContext = "", MemberType = MemberType.Property };
+                if (ctxStack.Count > 0 && (ctxStack.Peek().Type == MemberType.Class || ctxStack.Peek().Type == MemberType.Interface))
                 {
-                    // prefer enclosing class as parent so nested methods/properties inside methods appear under the class
-                    int classAncestor = FindAncestorIndexMatching(code, i, l => classRegex.IsMatch(l.TrimStart()));
-                    var titleSource = classAncestor != -1 ? code[classAncestor] : parent;
-                    string parentTitle;
-                    var titleTrimmed = titleSource.TrimStart();
-                    var classMatch = classRegex.Match(titleTrimmed);
-                    if (classMatch.Success)
-                    {
-                        parentTitle = classMatch.Groups[1].Value;
-                    }
-                    else
-                    {
-                        parentTitle = titleSource.Split('(').First()
-                            .Replace("export", "")
-                            .Replace("public", "")
-                            .Replace("static", "")
-                            .Replace("class ", "")
-                            .Replace("interface ", "")
-                            .Replace("{", "");
-                        parentTitle = parentTitle.Split('(').First().Trim();
-                    }
-                    name = parentTitle + "." + name;
-                }
-
-                var info = new MemberInfo();
-                info.Line = parseIndex;
-                info.MemberContext = "";
-                string shortName = name;
-                if (name.Contains('.'))
-                {
-                    var parts = name.Split(new[] { '.' }, 2);
-                    info.ParentPath = parts[0];
-                    info.Name = parts[0] + "." + parts[1];
-                    shortName = parts[1];
+                    info.Name = ctxStack.Peek().Name + "." + name;
+                    info.ParentPath = ctxStack.Peek().Name;
                 }
                 else
                 {
-                    info.ParentPath = "";
                     info.Name = name;
+                    info.ParentPath = "";
                 }
-                info.MemberType = shortName == "constructor" ? MemberType.Constructor : MemberType.Method;
-                info.MethodParameters = match.Groups[2].Value;
-                // Content should start as the dotted name (Structure() will trim to short name)
-                info.Content = showMethodParams ? info.Name + parms : info.Name + "(...)";
-                // class methods: check for private/protected modifiers on the declaration
-                info.IsPublic = !IsMemberPrivate(line);
+                info.Content = name;
+                info.IsPublic = IsExported(line);
                 map.Add(info);
-                continue;
-            }
-
-            // class property arrow functions like: increment = () => { }
-            if ((match = classPropArrow.Match(line)).Success || (match = classPropArrowSingle.Match(line)).Success)
-            {
-                // determine enclosing class
-                int classAncestor = FindAncestorIndexMatching(code, parseIndex, l => classRegex.IsMatch(l.TrimStart()));
-                if (classAncestor == -1)
+                // if this variable is a function expression or arrow function, mark its scope to avoid capturing inside it
+                var rawLine = raw.TrimStart();
+                if (rawLine.Contains("=>") || rawLine.Contains("= function"))
                 {
-                    // treat as top-level property if no enclosing class
-                    var name = match.Groups[1].Value;
-                    var info = new MemberInfo { Line = parseIndex, MemberContext = "" };
-                    if (name.Contains('.'))
+                    // attempt to find the end line of the function/arrow expression
+                    int endLine = i;
+                    if (rawLine.Contains("{"))
                     {
-                        var parts = name.Split(new[] { '.' }, 2);
-                        info.ParentPath = parts[0];
-                        // store dotted name so Structure() can group under the parent (e.g., Parent.Child)
-                        info.Name = parts[0] + "." + parts[1];
-                        // Content should be the short member name for display
-                        info.Content = parts[1];
+                        endLine = FindBlockEnd(code, i);
                     }
                     else
                     {
-                        info.ParentPath = "";
-                        info.Name = name;
-                        info.Content = name;
+                        var retIdx = FirstReturnIndexInFunction(code, i);
+                        if (retIdx != -1)
+                        {
+                            endLine = FindExpressionBodyEnd(code, i);
+                        }
                     }
-                    info.MemberType = MemberType.Property;
-                    info.IsPublic = IsExported(line);
+                    funcStack.Push(endLine);
+                }
+            }
+
+            // if inside a class or interface, look for simple method/property members
+            if (ctxStack.Count > 0)
+            {
+                var ctx = ctxStack.Peek();
+                // method inside class/interface
+                if ((match = classMethod.Match(line)).Success)
+                {
+                    var mname = match.Groups[1].Value;
+                    var parms = match.Groups[2].Value;
+                    var info = new MemberInfo { Line = i, MemberContext = "", MemberType = mname == "constructor" ? MemberType.Constructor : MemberType.Method };
+                    info.Name = ctx.Name + "." + mname;
+                    info.ParentPath = ctx.Name;
+                    info.MethodParameters = parms;
+                    info.Content = showMethodParams ? mname + "(" + parms + ")" : mname + "(...)";
+                    info.IsPublic = !IsMemberPrivate(line);
                     map.Add(info);
-                    continue;
+                    // entering a method body — don't capture nested declarations inside the method
+                    var methodEnd = FindBlockEnd(code, i);
+                    funcStack.Push(methodEnd);
                 }
-
-                // If inside a method's return block, skip
-                int methodAncestor = FindAncestorIndexMatching(code, parseIndex, l => classMethod.IsMatch(l.TrimStart()));
-                if (methodAncestor != -1)
+                else if ((match = propertyRegex.Match(line)).Success)
                 {
-                    int returnIndex = FirstReturnIndexInBlock(code, methodAncestor);
-                    if (returnIndex != -1 && parseIndex >= returnIndex)
-                        continue;
-                }
+                    var pname = match.Groups[1].Value;
+                    var rawLine = raw.TrimStart();
 
-                var classLine = code[classAncestor];
-                var classMatch = classRegex.Match(classLine.TrimStart());
-                string parentTitle = classMatch.Success ? classMatch.Groups[1].Value : classLine.Split('(').First().Trim();
-                var propName = match.Groups[1].Value;
-                var infoProp = new MemberInfo { Line = parseIndex, MemberContext = "" };
-                infoProp.ParentPath = parentTitle;
-                infoProp.Name = parentTitle + "." + propName;
-                infoProp.MemberType = MemberType.Property;
-                infoProp.Content = infoProp.Name;
-                // class property: respect private/protected modifiers on the declaration
-                infoProp.IsPublic = !IsMemberPrivate(line);
-                map.Add(infoProp);
-                continue;
-            }
-
-            if ((match = varFuncExpr.Match(line)).Success)
-            {
-                var name = match.Groups[1].Value;
-                var parms = "(" + match.Groups[2].Value + ")";
-
-                var parentIndex = ParentLineIndexOf(code, parseIndex);
-                if (parentIndex != -1)
-                {
-                    int componentAncestor = FindAncestorIndexMatching(code, parseIndex, l => IsDeclarationFunctionOrClass(l));
-                    if (componentAncestor != -1)
+                    // If the property's type is a function signature like: fn?: (arg: string) => void;
+                    // treat it as a method and capture the parameter list.
+                    if (rawLine.Contains("=>") || rawLine.Contains("function(") || rawLine.Contains("function ("))
                     {
-                        var declLine = code[componentAncestor].TrimStart();
-                        int returnIndex = -1;
-                        if (classRegex.IsMatch(declLine))
-                            returnIndex = FirstReturnIndexInBlock(code, componentAncestor);
-                        else
-                            returnIndex = FirstReturnIndexInFunction(code, componentAncestor);
-
-                        if (returnIndex != -1 && parseIndex >= returnIndex)
-                            continue;
-                    }
-                    var parent = code[parentIndex];
-
-                    var ptrim = parent.TrimStart();
-                    // only treat as nested when parent is a function-like declaration
-                    if (functionRegex.IsMatch(ptrim) || classMethod.IsMatch(ptrim) || varFuncExpr.IsMatch(ptrim) || varArrowFunc.IsMatch(ptrim) || varArrowFuncSingle.IsMatch(ptrim))
-                    {
-                        int classAncestor = FindAncestorIndexMatching(code, parseIndex, l => classRegex.IsMatch(l.TrimStart()));
-                        var titleSource = classAncestor != -1 ? code[classAncestor] : parent;
-                        string parentTitle;
-                        var titleTrimmed = titleSource.TrimStart();
-                        var classMatch = classRegex.Match(titleTrimmed);
-                        if (classMatch.Success)
+                        int nameIdx = rawLine.IndexOf(pname, StringComparison.Ordinal);
+                        if (nameIdx >= 0)
                         {
-                            parentTitle = classMatch.Groups[1].Value;
-                        }
-                        else
-                        {
-                            parentTitle = titleSource.Split('(').First()
-                                .Replace("export", "")
-                                .Replace("public", "")
-                                .Replace("static", "")
-                                .Replace("class ", "")
-                                .Replace("interface ", "")
-                                .Replace("{", "");
-                            parentTitle = parentTitle.Split('(').First().Trim();
-                        }
-                        name = parentTitle + "." + name;
-                    }
-                    else
-                    {
-                        // skip function expressions inside non-function blocks (e.g., inside if/for) to avoid noise
-                        continue;
-                    }
-                }
-
-                var info = new MemberInfo { Line = parseIndex, MemberContext = "" };
-                // If this is a top-level declaration (no parent index), allow treating
-                // typed React function expressions as properties (components).
-                if (parentIndex == -1)
-                {
-                    var rawDecl = code[parseIndex].TrimStart();
-                    bool isConstDecl = rawDecl.StartsWith("const ") || rawDecl.StartsWith("let ") || rawDecl.StartsWith("export const ") || rawDecl.StartsWith("export let ");
-                    bool isComponent = IsTypedReactComponentDeclaration(rawDecl);
-                    info.ParentPath = "";
-                    // include type annotation in name when present on const declarations
-                    var nameWithType = AppendTypeAnnotation(rawDecl, name);
-                    info.Name = nameWithType;
-                    info.Content = nameWithType;
-                    // const declarations should be treated as properties; typed components are properties too
-                    info.MemberType = isConstDecl ? MemberType.Property : (isComponent ? MemberType.Property : MemberType.Method);
-                    info.MethodParameters = match.Groups[2].Value;
-                    if (!isComponent && !isConstDecl)
-                        info.Content = showMethodParams ? nameWithType + parms : nameWithType + "(...)";
-                    map.Add(info);
-                    continue;
-                }
-
-                if (name.Contains('.'))
-                {
-                    var parts = name.Split(new[] { '.' }, 2);
-                    info.ParentPath = parts[0];
-                    info.Name = parts[1];
-                }
-                else
-                {
-                    info.ParentPath = "";
-                    info.Name = name;
-                }
-                info.MemberType = MemberType.Method;
-                info.MethodParameters = match.Groups[2].Value;
-                info.Content = showMethodParams ? info.Name + parms : info.Name + "(...)";
-                info.IsPublic = string.IsNullOrEmpty(info.ParentPath) ? IsExported(line) : !IsMemberPrivate(line);
-                map.Add(info);
-                continue;
-            }
-
-            if ((match = varArrowFunc.Match(line)).Success || (match = varArrowFuncSingle.Match(line)).Success)
-            {
-                var name = match.Groups[1].Value;
-                var parms = match.Groups.Count > 2 ? "(" + match.Groups[2].Value + ")" : "(...)";
-
-                // if this arrow function appears inside a component's return(...) block, skip it
-                int componentAncestor = FindAncestorIndexMatching(code, parseIndex, l => IsDeclarationFunctionOrClass(l));
-                if (componentAncestor != -1)
-                {
-                    var declLine = code[componentAncestor].TrimStart();
-                    int returnIndex = -1;
-                    if (classRegex.IsMatch(declLine))
-                        returnIndex = FirstReturnIndexInBlock(code, componentAncestor);
-                    else
-                        returnIndex = FirstReturnIndexInFunction(code, componentAncestor);
-
-                    if (IsTypedReactComponentDeclaration(declLine) && returnIndex != -1 && parseIndex >= returnIndex)
-                    {
-                        // inside return block of a typed component
-                        continue;
-                    }
-                }
-
-                var parentIndex = ParentLineIndexOf(code, parseIndex);
-                if (parentIndex != -1)
-                {
-                    var parent = code[parentIndex];
-                    // if parent is a typed React component, skip tracking any nested members inside it
-                    if (IsTypedReactComponentDeclaration(parent))
-                        continue;
-
-                    var ptrim = parent.TrimStart();
-                    if (functionRegex.IsMatch(ptrim) || classMethod.IsMatch(ptrim) || varFuncExpr.IsMatch(ptrim) || varArrowFunc.IsMatch(ptrim) || varArrowFuncSingle.IsMatch(ptrim))
-                    {
-                        int classAncestor = FindAncestorIndexMatching(code, parseIndex, l => classRegex.IsMatch(l.TrimStart()));
-                        var titleSource = classAncestor != -1 ? code[classAncestor] : parent;
-                        string parentTitle;
-                        var titleTrimmed = titleSource.TrimStart();
-                        var classMatch = classRegex.Match(titleTrimmed);
-                        if (classMatch.Success)
-                        {
-                            parentTitle = classMatch.Groups[1].Value;
-                        }
-                        else
-                        {
-                            parentTitle = titleSource.Split('(').First()
-                                .Replace("export", "")
-                                .Replace("public", "")
-                                .Replace("static", "")
-                                .Replace("class ", "")
-                                .Replace("interface ", "")
-                                .Replace("{", "");
-                            parentTitle = parentTitle.Split('(').First().Trim();
-                        }
-                        name = parentTitle + "." + name;
-                    }
-                    else
-                    {
-                        // skip arrow functions inside non-function blocks
-                        continue;
-                    }
-                }
-
-                // Treat const arrow declarations as properties and append any type annotation present
-                var rawDecl = code[parseIndex].TrimStart();
-                bool isConstDecl = rawDecl.StartsWith("const ") || rawDecl.StartsWith("let ") || rawDecl.StartsWith("export const ") || rawDecl.StartsWith("export let ");
-                bool isComponentDecl = IsTypedReactComponentDeclaration(rawDecl);
-                var info = new MemberInfo { Line = parseIndex, MemberContext = "" };
-                if (name.Contains('.'))
-                {
-                    var parts = name.Split(new[] { '.' }, 2);
-                    info.ParentPath = parts[0];
-                    // store dotted name so Structure() can group under the parent (e.g., Class.Member)
-                    info.Name = parts[0] + "." + parts[1];
-                    // Content should start as the dotted name so Structure() can trim to the short name
-                    info.Content = info.Name;
-                }
-                else
-                {
-                    info.ParentPath = "";
-                    var nameWithType = AppendTypeAnnotation(rawDecl, name);
-                    info.Name = nameWithType;
-                    // Content should preserve the type annotation for typed React components,
-                    // otherwise show a short, user-facing name without 'const' or type annotation
-                    info.Content = isComponentDecl ? nameWithType : ShortDecl(nameWithType);
-                }
-                info.MemberType = isConstDecl ? MemberType.Property : (isComponentDecl ? MemberType.Property : MemberType.Method);
-                info.MethodParameters = match.Groups.Count > 2 ? match.Groups[2].Value : "";
-                // For display: methods show parameters; consts/components keep the short name (with type if present)
-                if (!isConstDecl && !isComponentDecl)
-                    info.Content = showMethodParams ? info.Content + parms : info.Content + "(...)";
-                map.Add(info);
-                continue;
-            }
-
-            if ((match = propertyRegex.Match(line)).Success)
-            {
-                var name = match.Groups[1].Value;
-                int parentIndex = ParentLineIndexOf(code, parseIndex);
-                if (parentIndex != -1)
-                {
-                    // If the parent is a function/method/arrow/var function, this is likely a parameter line - skip it
-                    var parent = code[parentIndex];
-                    // if parent is a typed React component, skip tracking nested members that appear in its return block
-                    var returnIndex = FirstReturnIndexInFunction(code, parentIndex);
-                    if (IsTypedReactComponentDeclaration(parent) && returnIndex != -1 && parseIndex >= returnIndex)
-                    {
-                        // do not track nested properties inside the component's return block
-                        continue;
-                    }
-
-                    var ptrim = parent.TrimStart();
-                    if (functionRegex.IsMatch(ptrim) || classMethod.IsMatch(ptrim) || varFuncExpr.IsMatch(ptrim) || varArrowFunc.IsMatch(ptrim) || varArrowFuncSingle.IsMatch(ptrim))
-                    {
-                        // nested property inside a function-like parent: skip
-                        continue;
-                    }
-
-                    // If the parent line is a top-level var/const/let declaration with an object literal,
-                    // attach this property as a child of that top-level declaration and display the simple key name.
-                    var topVarMatch = topLevelVarRegex.Match(ptrim);
-                    if (topVarMatch.Success)
-                    {
-                        var parentVar = topVarMatch.Groups[1].Value;
-                        var parentNameWithType = AppendTypeAnnotation(ptrim, parentVar);
-
-                        // detect if the property value is a function type or arrow function (=>) so we
-                        // represent it as a Method rather than a plain Property
-                        var matchedText = match.Value;
-                        bool isFuncTyped = matchedText.Contains("=>") || matchedText.Contains("function(");
-                        string funcParams = "";
-                        if (isFuncTyped)
-                        {
-                            var pstart = matchedText.IndexOf('(');
+                            int pstart = rawLine.IndexOf('(', nameIdx + pname.Length);
                             if (pstart >= 0)
                             {
-                                var pend = matchedText.IndexOf(')', pstart);
+                                int pend = rawLine.IndexOf(')', pstart);
                                 if (pend > pstart)
-                                    funcParams = matchedText.Substring(pstart + 1, pend - pstart - 1);
+                                {
+                                    var parms = rawLine.Substring(pstart + 1, pend - pstart - 1).Trim();
+                                    var info = new MemberInfo { Line = i, MemberContext = "", MemberType = MemberType.Method };
+                                    info.Name = ctx.Name + "." + pname;
+                                    info.ParentPath = ctx.Name;
+                                    info.MethodParameters = parms;
+                                    info.Content = showMethodParams ? pname + "(" + parms + ")" : pname + "(...)";
+                                    info.IsPublic = !IsMemberPrivate(line);
+                                    map.Add(info);
+                                    continue;
+                                }
                             }
                         }
-
-                        var infoVarProp = new MemberInfo
-                        {
-                            Line = parseIndex,
-                            ParentPath = parentNameWithType,
-                            Name = parentNameWithType + "." + name,
-                            MemberContext = "",
-                            MemberType = isFuncTyped ? MemberType.Method : MemberType.Property,
-                            Content = isFuncTyped ? (showMethodParams ? name + "(" + funcParams + ")" : name + "(...)") : name
-                        };
-                        // inherit visibility from the parent top-level var (exported => public)
-                        infoVarProp.IsPublic = IsExported(ptrim);
-                        map.Add(infoVarProp);
-                        continue;
                     }
 
-                    // prefer enclosing class as parent for property nesting
-                    int classAncestor = FindAncestorIndexMatching(code, parseIndex, l => classRegex.IsMatch(l.TrimStart()));
-                    var titleSource = classAncestor != -1 ? code[classAncestor] : parent;
-                    string parentTitle;
-                    var titleTrimmed = titleSource.TrimStart();
-                    var classMatch = classRegex.Match(titleTrimmed);
-                    if (classMatch.Success)
-                    {
-                        parentTitle = classMatch.Groups[1].Value;
-                    }
-                    else
-                    {
-                        parentTitle = titleSource.Split('(').First()
-                            .Replace("export", "")
-                            .Replace("public", "")
-                            .Replace("static", "")
-                            .Replace("class ", "")
-                            .Replace("interface ", "")
-                            .Replace("{", "");
-                        parentTitle = parentTitle.Split('(').First().Trim();
-                    }
-                    name = parentTitle + "." + name;
+                    var infoProp = new MemberInfo { Line = i, MemberContext = "", MemberType = MemberType.Property };
+                    infoProp.Name = ctx.Name + "." + pname;
+                    infoProp.ParentPath = ctx.Name;
+                    infoProp.Content = pname;
+                    infoProp.IsPublic = !IsMemberPrivate(line);
+                    map.Add(infoProp);
                 }
-
-                var info = new MemberInfo { Line = parseIndex, ParentPath = "", Name = name, MemberContext = "", MemberType = MemberType.Property, Content = name };
-                // If the property's type is a function expression (e.g., (): void => ...), mark it as a method
-                var fullMatch = match.Value;
-                if (fullMatch.Contains("=>") || fullMatch.Contains("function("))
-                {
-                    var pstart = fullMatch.IndexOf('(');
-                    if (pstart >= 0)
-                    {
-                        var pend = fullMatch.IndexOf(')', pstart);
-                        if (pend > pstart)
-                        {
-                            var parms = fullMatch.Substring(pstart + 1, pend - pstart - 1);
-                            info.MemberType = MemberType.Method;
-                            info.MethodParameters = parms;
-                            info.Content = showMethodParams ? info.Name + "(" + parms + ")" : info.Name + "(...)";
-                        }
-                    }
-                }
-                map.Add(info);
-                continue;
             }
 
-            // top-level const/let/var (file-level properties). Do not track properties inside functions or interfaces.
-            if ((match = topLevelVarRegex.Match(line)).Success)
+            // update brace depth and pop contexts that end
+            braceDepth += opens - closes;
+            while (ctxStack.Count > 0 && braceDepth < ctxStack.Peek().Depth)
             {
-                var parent = ParentLineOf(code, parseIndex);
-                if (parent == null)
-                {
-                    var name = match.Groups[1].Value;
-                    var rawDecl = code[parseIndex].TrimStart();
-                    var nameWithType = AppendTypeAnnotation(rawDecl, name);
-                    // If this top-level var is a typed React component, preserve the type annotation in the display Content
-                    var content = IsTypedReactComponentDeclaration(rawDecl) ? nameWithType : ShortDecl(nameWithType);
-                    var info = new MemberInfo { Line = parseIndex, ParentPath = "", Name = nameWithType, MemberContext = "", MemberType = MemberType.Property, Content = content };
-                    info.IsPublic = IsExported(rawDecl);
-                    map.Add(info);
-                }
-                continue;
+                ctxStack.Pop();
             }
         }
 
